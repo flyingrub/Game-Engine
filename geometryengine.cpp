@@ -51,7 +51,11 @@
 #include "geometryengine.h"
 
 #include <QVector2D>
+#include <vector>
 #include <QVector3D>
+#include <cstdlib>
+
+using namespace std;
 
 struct VertexData
 {
@@ -83,43 +87,44 @@ void GeometryEngine::initCubeGeometry()
     // For cube we would need only 8 vertices but we have to
     // duplicate vertex for each face because texture coordinate
     // is different.
-    VertexData vertices[] = {
+ VertexData vertices[] = {
         // Vertex data for face 0
-        {QVector3D(-1.0f, -1.0f,  0.0f), QVector2D(0.0f, 0.0f)},  // v0
-        {QVector3D( 1.0f, -1.0f,  0.0f), QVector2D(0.33f, 0.0f)}, // v1
-        {QVector3D(-1.0f,  1.0f,  0.0f), QVector2D(0.0f, 0.5f)},  // v2
-        {QVector3D( 1.0f,  1.0f,  0.0f), QVector2D(0.33f, 0.5f)}, // v3
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.0f, 0.0f)},  // v0
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.0f)}, // v1
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.0f, 0.5f)},  // v2
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v3
 
         // Vertex data for face 1
-        {QVector3D(1 + -1.0f, -1.0f,  0.0f), QVector2D( 0.0f, 0.5f)}, // v4
-        {QVector3D(1 +  1.0f, -1.0f,  0.0f), QVector2D(0.33f, 0.5f)}, // v5
-        {QVector3D(1 + -1.0f,  1.0f,  0.0f), QVector2D(0.0f, 1.0f)},  // v6
-        {QVector3D(1 +  1.0f,  1.0f,  0.0f), QVector2D(0.33f, 1.0f)}, // v7
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D( 0.0f, 0.5f)}, // v4
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.5f)}, // v5
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.0f, 1.0f)},  // v6
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)}, // v7
 
         // Vertex data for face 2
-        {QVector3D(-1.0f, 1 + -1.0f,  0.0f), QVector2D(0.66f, 0.5f)}, // v8
-        {QVector3D( 1.0f, 1 + -1.0f,  0.0f), QVector2D(1.0f, 0.5f)},  // v9
-        {QVector3D(-1.0f, 1 +  1.0f,  0.0f), QVector2D(0.66f, 1.0f)}, // v10
-        {QVector3D( 1.0f, 1 +  1.0f,  0.0f), QVector2D(1.0f, 1.0f)},  // v11
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.5f)}, // v8
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(1.0f, 0.5f)},  // v9
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}, // v10
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(1.0f, 1.0f)},  // v11
 
         // Vertex data for face 3
-        {QVector3D(1 + -1.0f, 1 + -1.0f,  0.0f), QVector2D(0.66f, 0.0f)}, // v12
-        {QVector3D(1 +  1.0f, 1 + -1.0f,  0.0f), QVector2D(1.0f, 0.0f)},  // v13
-        {QVector3D(1 + -1.0f, 1 +  1.0f,  0.0f), QVector2D(0.66f, 0.5f)}, // v14
-        {QVector3D(1 +  1.0f, 1 +  1.0f,  0.0f), QVector2D(1.0f, 0.5f)},  // v15
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)}, // v12
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(1.0f, 0.0f)},  // v13
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.66f, 0.5f)}, // v14
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(1.0f, 0.5f)},  // v15
 
         // Vertex data for face 4
-        {QVector3D(-2 + -1.0f, -1.0f,  0.0f), QVector2D(0.33f, 0.0f)}, // v16
-        {QVector3D(-2 +  1.0f, -1.0f,  0.0f), QVector2D(0.66f, 0.0f)}, // v17
-        {QVector3D(-2 + -1.0f,  1.0f,  0.0f), QVector2D(0.33f, 0.5f)}, // v18
-        {QVector3D(-2 +  1.0f,  1.0f,  0.0f), QVector2D(0.66f, 0.5f)}, // v19
+        {QVector3D(-1.0f, -1.0f, -1.0f), QVector2D(0.33f, 0.0f)}, // v16
+        {QVector3D( 1.0f, -1.0f, -1.0f), QVector2D(0.66f, 0.0f)}, // v17
+        {QVector3D(-1.0f, -1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v18
+        {QVector3D( 1.0f, -1.0f,  1.0f), QVector2D(0.66f, 0.5f)}, // v19
 
         // Vertex data for face 5
-        {QVector3D(-1.0f, - 1 +  -1.0f,  0.0f), QVector2D(0.33f, 0.5f)}, // v20
-        {QVector3D( 1.0f, - 1 +  -1.0f,  0.0f), QVector2D(0.66f, 0.5f)}, // v21
-        {QVector3D(-1.0f, - 1 +   1.0f,  0.0f), QVector2D(0.33f, 1.0f)}, // v22
-        {QVector3D( 1.0f, - 1 +   1.0f,  0.0f), QVector2D(0.66f, 1.0f)}  // v23
+        {QVector3D(-1.0f,  1.0f,  1.0f), QVector2D(0.33f, 0.5f)}, // v20
+        {QVector3D( 1.0f,  1.0f,  1.0f), QVector2D(0.66f, 0.5f)}, // v21
+        {QVector3D(-1.0f,  1.0f, -1.0f), QVector2D(0.33f, 1.0f)}, // v22
+        {QVector3D( 1.0f,  1.0f, -1.0f), QVector2D(0.66f, 1.0f)}  // v23
     };
+
 
     // Indices for drawing cube faces using triangle strips.
     // Triangle strips can be connected by duplicating indices
@@ -176,6 +181,35 @@ void GeometryEngine::drawCubeGeometry(QOpenGLShaderProgram *program)
 }
 //! [2]
 
+void GeometryEngine::initPlane(unsigned short width, unsigned short height) {
+    VertexData vertices[width*height];
+    int offset = 0;
+    for (int i=0; i<height; i++) {
+        for (int j=0; j<width;j++) {
+            float randomZ = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/2.0f));
+            float positionX = (float) i / (float) (width - 1);
+            float positionY = (float) j / (float) (height - 1);
+            vertices[offset++] = {QVector3D(i, j,  randomZ), QVector2D(positionX,positionY)};
+        }
+    }
+    vector<unsigned short> vIndices;
+    for (unsigned short row = 0; row < height; row++) {
+        if (row != 0) vIndices.push_back(row * width);
+        for (unsigned short col = 0; col < width; col++) {
+            vIndices.push_back(row * width + col);
+            vIndices.push_back((row + 1) * width + col);
+        }
+        if (row != height - 1) vIndices.push_back((row + 1) * width + width - 1);
+    }
+    GLushort* indices = &vIndices[0];
+    indicesSize = vIndices.size();
+    arrayBuf.bind();
+    arrayBuf.allocate(vertices, width * height * sizeof(VertexData));
+
+    // Transfer index data to VBO 1
+    indexBuf.bind();
+    indexBuf.allocate(indices, indicesSize * sizeof(GLushort));
+}
 
 
 void GeometryEngine::initPlaneGeometry()
@@ -272,6 +306,6 @@ void GeometryEngine::drawPlaneGeometry(QOpenGLShaderProgram *program)
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
     // Draw cube geometry using indices from VBO 1
-    glDrawElements(GL_TRIANGLE_STRIP, 34, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, indicesSize, GL_UNSIGNED_SHORT, 0);
 }
 

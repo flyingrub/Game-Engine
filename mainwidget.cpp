@@ -76,14 +76,18 @@ MainWidget::~MainWidget()
 //! [0]
 void MainWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Z) {
-        camera.setZ(camera.z() + 0.2);
-    } else if (event->key() == Qt::Key_S) {
+    if (event->key() == Qt::Key_E) {
         camera.setZ(camera.z() - 0.2);
+    } else if (event->key() == Qt::Key_A) {
+        camera.setZ(camera.z() + 0.2);
     } else if (event->key() == Qt::Key_D) {
         camera.setX(camera.x() - 0.2);
     } else if (event->key() == Qt::Key_Q) {
         camera.setX(camera.x() + 0.2);
+    } else if (event->key() == Qt::Key_Z) {
+        camera.setY(camera.y() - 0.2);
+    } else if (event->key() == Qt::Key_S) {
+        camera.setY(camera.y() + 0.2);
     }
     update();
 }
@@ -125,7 +129,7 @@ void MainWidget::timerEvent(QTimerEvent *)
         angularSpeed = 0.0;
     } else {
         // Update rotation
-        rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
+        //rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
 
         // Request an update
         update();
@@ -151,7 +155,7 @@ void MainWidget::initializeGL()
 //! [2]
 
     geometries = new GeometryEngine;
-    geometries->initPlaneGeometry();
+    geometries->initPlane(16,16);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(12, this);
