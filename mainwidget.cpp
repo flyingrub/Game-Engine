@@ -142,6 +142,7 @@ void MainWidget::initializeGL()
     initializeOpenGLFunctions();
 
     glClearColor(0, 0, 0, 1);
+    rotation = QQuaternion::fromAxisAndAngle(1,0,0, -80);
 
     initShaders();
     initTextures();

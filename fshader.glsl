@@ -7,12 +7,26 @@ precision mediump float;
 uniform sampler2D texture;
 
 varying vec2 v_texcoord;
+varying float z;
 
-//! [0]
+float near = 0.1;
+float far  = 10.0;
+
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // back to NDC
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
 void main()
 {
-    // Set fragment color from texture
-    gl_FragColor = texture2D(texture, v_texcoord);
+    float depth = LinearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration
+
+
+    //gl_FragColor = texture2D(texture, v_texcoord); // Texture
+    gl_FragColor = vec4(vec3(depth), 1.0); // Depth
+    gl_FragColor = vec4(vec3(z), 1.0); // Altitude
 }
+
 //! [0]
 
