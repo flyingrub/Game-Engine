@@ -175,7 +175,7 @@ void GeometryEngine::drawCubeGeometry(QOpenGLShaderProgram *program)
     int texcoordLocation = program->attributeLocation("a_texcoord");
     program->enableAttributeArray(texcoordLocation);
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
-
+    indicesSize = 34;
     // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLE_STRIP, 34, GL_UNSIGNED_SHORT, 0);
 }
@@ -272,6 +272,7 @@ void GeometryEngine::initPlaneGeometry()
     };
 
 //! [1]
+    indicesSize = 34;
     // Transfer vertex data to VBO 0
     arrayBuf.bind();
     arrayBuf.allocate(vertices, 24 * sizeof(VertexData));
