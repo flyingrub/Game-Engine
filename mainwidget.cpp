@@ -53,11 +53,11 @@
 #include <QMouseEvent>
 #include <cmath>
 
-MainWidget::MainWidget(QWidget *parent) :
+MainWidget::MainWidget(QWidget *parent, int fps) :
     QOpenGLWidget(parent),
     geometries(0),
     texture(0),
-    angularSpeed(0)
+    fps(fps)
 {
     camera = QVector3D(0,0,5);
 }
@@ -99,21 +99,6 @@ void MainWidget::mousePressEvent(QMouseEvent *e)
 
 void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 {
-    // Mouse release position - mouse press position
-    QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
-
-    // Rotation axis is perpendicular to the mouse position difference
-    // vector
-    QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
-
-    // Accelerate angular speed relative to the length of the mouse sweep
-    qreal acc = diff.length() / 100.0;
-
-    // Calculate new rotation axis as weighted sum
-    rotationAxis = (rotationAxis * angularSpeed + n * acc).normalized();
-
-    // Increase angular speed
-    angularSpeed += acc;
 }
 //! [0]
 
@@ -121,7 +106,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 void MainWidget::timerEvent(QTimerEvent *event)
 {
     if (fmod(rotation_angle, 360) == 0) rotation_angle = 0;
-    rotation_angle += 0.005;
+    rotation_angle += 0.05;
     camera = QVector3D(cos(rotation_angle)*8, sin(rotation_angle)*8, 5);
     update();
 }
@@ -148,7 +133,7 @@ void MainWidget::initializeGL()
     geometries->initFromHeightMap("/home/fly/workspace/Moteur de jeux/cube/heightmap-3.png", 10);
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(12, this);
+    timer.start(1000.0 / fps, this);
 }
 
 //! [3]

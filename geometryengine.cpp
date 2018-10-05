@@ -237,19 +237,12 @@ void GeometryEngine::initFromHeightMap(QString heightMap, float mapSize) {
     }
     vector<GLuint> vIndices;
     for (unsigned int row = 0; row < height; row++) {
-        auto qlog = qDebug();
-        if (row != 0) {vIndices.push_back(row * width);
-        qlog << row * width;}
+        if (row != 0) vIndices.push_back(row * width);
         for (unsigned int col = 0; col < width; col++) {
             vIndices.push_back(row * width + col);
-            qlog << row * width + col;
             vIndices.push_back((row + 1) * width + col);
-            qlog << (row+1) * width + col;
         }
-        if (row != height - 1) {vIndices.push_back((row + 1) * width + width - 1);
-            unsigned int d = (row + 1) * width + width - 1;
-            qlog << d;
-        }
+        if (row != height - 1) vIndices.push_back((row + 1) * width + width - 1);
     }
 
     GLuint* indices = &vIndices[0];
