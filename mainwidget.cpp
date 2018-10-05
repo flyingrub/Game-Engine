@@ -52,12 +52,16 @@
 
 #include <QMouseEvent>
 #include <cmath>
+#include <QPainter>
 
-MainWidget::MainWidget(QWidget *parent, int fps) :
+float MainWidget::rotation_speed = 0.05;
+
+
+MainWidget::MainWidget(QWidget *parent, int update_fps) :
     QOpenGLWidget(parent),
     geometries(0),
     texture(0),
-    fps(fps)
+    update_fps(update_fps)
 {
     camera = QVector3D(0,0,5);
 }
@@ -87,6 +91,10 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         camera.setY(camera.y() - 0.2);
     } else if (event->key() == Qt::Key_S) {
         camera.setY(camera.y() + 0.2);
+    } if (event->key() == Qt::Key_Up) {
+        rotation_speed += 0.001;
+    } else if (event->key() == Qt::Key_Down) {
+        rotation_speed -= 0.001;
     }
     update();
 }
@@ -105,8 +113,12 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 //! [1]
 void MainWidget::timerEvent(QTimerEvent *event)
 {
-    if (fmod(rotation_angle, 360) == 0) rotation_angle = 0;
-    rotation_angle += 0.05;
+    QTime new_time = QTime::currentTime();
+    float timeElapsed = last_time.msecsTo(new_time);
+    last_time = new_time;
+
+    if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
+    rotation_angle += rotation_speed * timeElapsed / 100.0;
     camera = QVector3D(cos(rotation_angle)*8, sin(rotation_angle)*8, 5);
     update();
 }
@@ -133,7 +145,7 @@ void MainWidget::initializeGL()
     geometries->initFromHeightMap("/home/fly/workspace/Moteur de jeux/cube/heightmap-3.png", 10);
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(1000.0 / fps, this);
+    timer.start(1000.0 / update_fps, this);
 }
 
 //! [3]

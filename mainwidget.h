@@ -59,6 +59,7 @@
 #include <QQuaternion>
 #include <QVector2D>
 #include <QBasicTimer>
+#include <QTime>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
@@ -69,7 +70,7 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit MainWidget(QWidget *parent = nullptr, int fps=60);
+    explicit MainWidget(QWidget *parent = nullptr, int update_fps=60);
     ~MainWidget();
 
 protected:
@@ -85,6 +86,9 @@ protected:
     void initShaders();
     void initTextures();
 
+    void calcFPS();
+    void renderText(double x, double y, double z, const QString &str, const QFont & font = QFont());
+
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram program;
@@ -96,10 +100,14 @@ private:
 
     QVector2D mousePressPosition;
     QVector3D rotationAxis;
-    int fps;
     QQuaternion rotation;
     QVector3D camera;
-    qreal rotation_angle = 0;
+
+    int update_fps;
+    float rotation_angle = 0;
+    static float rotation_speed;
+
+    QTime last_time = QTime::currentTime();
 };
 
 #endif // MAINWIDGET_H
