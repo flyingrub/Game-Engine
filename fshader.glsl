@@ -24,8 +24,8 @@ void main()
     float alt = z / 2.0;
 
     // gl_FragColor = texture2D(texture, v_texcoord); // Texture
-    gl_FragColor = vec4(vec3(depth), 1.0); // Depth
-    // gl_FragColor = vec4(vec3(alt), 1.0); // Altitude
+    // gl_FragColor = vec4(vec3(depth), 1.0); // Depth
+    gl_FragColor = vec4(vec3(alt), 1.0); // Altitude
 }
 
 //! [0]

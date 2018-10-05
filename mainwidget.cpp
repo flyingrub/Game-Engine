@@ -51,8 +51,7 @@
 #include "mainwidget.h"
 
 #include <QMouseEvent>
-
-#include <math.h>
+#include <cmath>
 
 MainWidget::MainWidget(QWidget *parent) :
     QOpenGLWidget(parent),
@@ -60,7 +59,7 @@ MainWidget::MainWidget(QWidget *parent) :
     texture(0),
     angularSpeed(0)
 {
-    camera = QVector3D(0,0,-5);
+    camera = QVector3D(0,0,5);
 }
 
 MainWidget::~MainWidget()
@@ -119,21 +118,12 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 //! [0]
 
 //! [1]
-void MainWidget::timerEvent(QTimerEvent *)
+void MainWidget::timerEvent(QTimerEvent *event)
 {
-    // Decrease angular speed (friction)
-    angularSpeed *= 0.99;
-
-    // Stop rotation when speed goes below threshold
-    if (angularSpeed < 0.01) {
-        angularSpeed = 0.0;
-    } else {
-        // Update rotation
-        //rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
-
-        // Request an update
-        update();
-    }
+    if (fmod(rotation_angle, 360) == 0) rotation_angle = 0;
+    rotation_angle += 0.005;
+    camera = QVector3D(cos(rotation_angle)*8, sin(rotation_angle)*8, 5);
+    update();
 }
 //! [1]
 
@@ -142,7 +132,6 @@ void MainWidget::initializeGL()
     initializeOpenGLFunctions();
 
     glClearColor(0, 0, 0, 1);
-    rotation = QQuaternion::fromAxisAndAngle(1,0,0, -80);
 
     initShaders();
     initTextures();
@@ -156,7 +145,7 @@ void MainWidget::initializeGL()
 //! [2]
 
     geometries = new GeometryEngine;
-    geometries->initPlane(16,16);
+    geometries->initFromHeightMap("/home/fly/workspace/Moteur de jeux/cube/heightmap-3.png", 10);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(12, this);
@@ -228,8 +217,13 @@ void MainWidget::paintGL()
 //! [6]
     // Calculate model view transformation
     QMatrix4x4 matrix;
-    matrix.translate(camera);
-    matrix.rotate(rotation);
+    // matrix.translate(camera);
+    // matrix.rotate(rotation);
+
+    QVector3D eye = camera;
+    QVector3D center = QVector3D(0.0,0.0,2.0);
+    QVector3D up = QVector3D(0,0,1);
+    matrix.lookAt(eye,center,up);
 
     // Set modelview-projection matrix
     program.setUniformValue("mvp_matrix", projection * matrix);

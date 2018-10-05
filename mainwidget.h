@@ -99,6 +99,7 @@ private:
     qreal angularSpeed;
     QQuaternion rotation;
     QVector3D camera;
+    qreal rotation_angle = 0;
 };
 
 #endif // MAINWIDGET_H

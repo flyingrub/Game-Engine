@@ -54,6 +54,7 @@
 #include <vector>
 #include <QVector3D>
 #include <cstdlib>
+#include <QImage>
 
 using namespace std;
 
@@ -211,6 +212,56 @@ void GeometryEngine::initPlane(unsigned short width, unsigned short height) {
     indexBuf.allocate(indices, indicesSize * sizeof(GLushort));
 }
 
+void GeometryEngine::initFromHeightMap(QString heightMap, float mapSize) {
+    QImage img = QImage(heightMap);
+    if (img.isNull()) {
+        qDebug() << "Invalid Image";
+        indicesSize = 0;
+        return;
+    }
+    unsigned int width = img.width();
+    unsigned int height = img.height();
+    VertexData vertices[width*height];
+    int offset = 0;
+    for (int i=0; i<height; i++) {
+        for (int j=0; j<width;j++) {
+            float x = i * mapSize / (float) width - mapSize / 2;
+            float y = j * mapSize / (float) width - mapSize / 2;
+            QRgb c = img.pixel(i,j);
+            float greyValue = qGray(c);
+            float z = 2.0f * greyValue / 255.0f;
+            float positionX = (float) i / (float) (width);
+            float positionY = (float) j / (float) (height);
+            vertices[offset++] = {QVector3D(x, y,  z), QVector2D(positionX,positionY)};
+        }
+    }
+    vector<GLuint> vIndices;
+    for (unsigned int row = 0; row < height; row++) {
+        auto qlog = qDebug();
+        if (row != 0) {vIndices.push_back(row * width);
+        qlog << row * width;}
+        for (unsigned int col = 0; col < width; col++) {
+            vIndices.push_back(row * width + col);
+            qlog << row * width + col;
+            vIndices.push_back((row + 1) * width + col);
+            qlog << (row+1) * width + col;
+        }
+        if (row != height - 1) {vIndices.push_back((row + 1) * width + width - 1);
+            unsigned int d = (row + 1) * width + width - 1;
+            qlog << d;
+        }
+    }
+
+    GLuint* indices = &vIndices[0];
+    indicesSize = vIndices.size();
+    arrayBuf.bind();
+    arrayBuf.allocate(vertices, width * height * sizeof(VertexData));
+
+    // Transfer index data to VBO 1
+    indexBuf.bind();
+    indexBuf.allocate(indices, indicesSize * sizeof(GLuint));
+}
+
 
 void GeometryEngine::initPlaneGeometry()
 {
@@ -307,6 +358,6 @@ void GeometryEngine::drawPlaneGeometry(QOpenGLShaderProgram *program)
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
     // Draw cube geometry using indices from VBO 1
-    glDrawElements(GL_TRIANGLE_STRIP, indicesSize, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, indicesSize, GL_UNSIGNED_INT, 0);
 }
 

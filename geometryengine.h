@@ -64,6 +64,7 @@ public:
     void initCubeGeometry();
     void initPlaneGeometry();
     void initPlane(unsigned short x, unsigned short y);
+    void initFromHeightMap(QString heightMap, float mapSize);
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawPlaneGeometry(QOpenGLShaderProgram *program);

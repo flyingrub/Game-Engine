@@ -15,7 +15,7 @@ HEADERS += \
 
 RESOURCES += \
     shaders.qrc \
-    textures.qrc
+    textures.qrc \
 
 # install
 target.path = ..
