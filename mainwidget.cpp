@@ -119,7 +119,7 @@ void MainWidget::timerEvent(QTimerEvent *event)
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle += rotation_speed * timeElapsed / 100.0;
-    camera = QVector3D(cos(rotation_angle)*8, sin(rotation_angle)*8, 5);
+    camera = QVector3D(cos(rotation_angle)*15, sin(rotation_angle)*15, 5);
     update();
 }
 //! [1]
@@ -228,6 +228,13 @@ void MainWidget::paintGL()
 
     // Use texture unit 0 which contains cube.png
     program.setUniformValue("texture", 0);
+
+    program.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
+    QVector3D light_pos = { 0, 0, 10 };
+    QVector3D light_color = { 1, 1, 1 };
+    program.setUniformValue("light_pos", light_pos);
+    program.setUniformValue("light_color", light_color);
+
 
     geometries->drawPlaneGeometry(&program);
 }

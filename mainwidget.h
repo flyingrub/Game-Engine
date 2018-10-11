@@ -103,6 +103,8 @@ private:
     QQuaternion rotation;
     QVector3D camera;
 
+    QTime start_time = QTime::currentTime();
+
     int update_fps;
     float rotation_angle = 0;
     static float rotation_speed;
