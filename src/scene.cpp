@@ -41,9 +41,12 @@ void Scene::updateGlobalMatrix()
     }
 }
 
-void Scene::draw(QOpenGL)
+void Scene::draw(QOpenGLShaderProgram* program)
 {
     if (geometry) {
-        geometry.value().get()->draw();
+        geometry.value().get()->draw(program);
+    }
+    for (auto const& c : children) {
+        c->draw(program);
     }
 }

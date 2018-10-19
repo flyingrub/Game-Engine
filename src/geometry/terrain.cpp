@@ -4,6 +4,7 @@ using namespace std;
 
 Terrain::Terrain(): width(10), height(10){
     createGeometry();
+    bind();
 }
 
 Terrain::Terrain(int width, int height): width(width), height(height){
@@ -31,16 +32,16 @@ void Terrain::createGeometry() {
             }
             float positionX = (float) i / (float) (width);
             float positionY = (float) j / (float) (height);
-            vertexBuffer.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY)});
+            vertices.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY)});
         }
     }
 
     for (int row = 0; row < height; row++) {
-        if (row != 0) indexBuffer.push_back(row * width);
+        if (row != 0) indices.push_back(row * width);
         for (int col = 0; col < width; col++) {
-            indexBuffer.push_back(row * width + col);
-            indexBuffer.push_back((row + 1) * width + col);
+            indices.push_back(row * width + col);
+            indices.push_back((row + 1) * width + col);
         }
-        if (row != height - 1) indexBuffer.push_back((row + 1) * width + width - 1);
+        if (row != height - 1) indices.push_back((row + 1) * width + width - 1);
     }
 }

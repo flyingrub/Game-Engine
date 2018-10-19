@@ -51,8 +51,6 @@
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include "geometryengine.h"
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QMatrix4x4>
@@ -91,10 +89,7 @@ protected:
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram program;
-    GeometryEngine *geometries;
-
     QOpenGLTexture *texture;
-
     QMatrix4x4 projection;
 
     QVector2D mousePressPosition;
@@ -103,12 +98,11 @@ private:
     QVector3D camera;
 
     QTime start_time = QTime::currentTime();
+    QTime last_time = QTime::currentTime();
 
     int update_fps;
     float rotation_angle = 0;
     static float rotation_speed;
-
-    QTime last_time = QTime::currentTime();
 
     Scene scene;
 };

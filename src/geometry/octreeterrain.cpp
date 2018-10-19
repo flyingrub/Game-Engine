@@ -1,6 +1,6 @@
 #include "octreeterrain.h"
 
-OctreeTerrain::OctreeTerrain()
+QuadtreeTerrain::QuadtreeTerrain()
 {
 
 }

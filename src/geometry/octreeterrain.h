@@ -3,12 +3,12 @@
 
 #include <array>
 
-class OctreeTerrain
+class QuadtreeTerrain
 {
 public:
-    OctreeTerrain();
+    QuadtreeTerrain();
 private:
-    std::array<4, OctreeTerrain*> children;
+    QuadtreeTerrain* children;
 };
 
 #endif // OCTREETERRAIN_H

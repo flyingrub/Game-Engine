@@ -3,7 +3,7 @@
 
 #include "geometry.h"
 
-class Cube : Geometry
+class Cube : public Geometry
 {
 public:
     Cube();

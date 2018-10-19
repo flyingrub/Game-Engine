@@ -53,17 +53,17 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <QPainter>
+#include "geometry/cube.h"
 
 float MainWidget::rotation_speed = 0.05;
 
 
 MainWidget::MainWidget(QWidget *parent, int update_fps) :
     QOpenGLWidget(parent),
-    geometries(0),
     texture(0),
     update_fps(update_fps)
 {
-    camera = QVector3D(0,0,5);
+    camera = {0,0,5};
 }
 
 MainWidget::~MainWidget()
@@ -72,7 +72,6 @@ MainWidget::~MainWidget()
     // and the buffers.
     makeCurrent();
     delete texture;
-    delete geometries;
     doneCurrent();
 }
 
@@ -116,12 +115,13 @@ void MainWidget::timerEvent(QTimerEvent *event)
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle += rotation_speed * timeElapsed / 100.0;
-    camera = QVector3D(cos(rotation_angle)*15, sin(rotation_angle)*15, 5);
-    update();
+//    camera = QVector3D(cos(rotation_angle)*15, sin(rotation_angle)*15, 5);
+//    update();
 }
 
 void MainWidget::initializeGL()
 {
+    makeCurrent();
     initializeOpenGLFunctions();
 
     glClearColor(0, 0, 0, 1);
@@ -135,6 +135,11 @@ void MainWidget::initializeGL()
     // Enable back face culling
     glEnable(GL_CULL_FACE);
 
+    Scene* cubeScene = new Scene();
+    shared_ptr<Geometry> cube = make_shared<Cube>();
+    cubeScene->setGeometry(cube);
+    scene.addChild(cubeScene);
+
     // Use QBasicTimer because its faster than QTimer
     timer.start(1000.0 / update_fps, this);
 }
@@ -142,11 +147,11 @@ void MainWidget::initializeGL()
 void MainWidget::initShaders()
 {
     // Compile vertex shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vshader.glsl"))
+    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vshader.glsl"))
         close();
 
     // Compile fragment shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/fshader.glsl"))
+    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fshader.glsl"))
         close();
 
     // Link shader pipeline
@@ -163,7 +168,7 @@ void MainWidget::initShaders()
 void MainWidget::initTextures()
 {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
+    texture = new QOpenGLTexture(QImage(":/textures/cube.png").mirrored());
 
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
@@ -224,7 +229,5 @@ void MainWidget::paintGL()
     QVector3D light_color = { 1, 1, 1 };
     program.setUniformValue("light_pos", light_pos);
     program.setUniformValue("light_color", light_color);
-
-
-    geometries->drawPlaneGeometry(&program);
+    scene.draw(&program);
 }
