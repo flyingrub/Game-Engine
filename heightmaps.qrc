@@ -1,0 +1,7 @@
+<RCC>
+    <qresource>
+        <file>heightmaps/heightmap-1.png</file>
+        <file>heightmaps/heightmap-2.png</file>
+        <file>heightmaps/heightmap-3.png</file>
+    </qresource>
+</RCC>

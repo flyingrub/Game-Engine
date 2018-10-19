@@ -1,8 +1,5 @@
 <RCC>
-    <qresource prefix="/">
-        <file>cube.png</file>
-        <file>heightmap-1.png</file>
-        <file>heightmap-2.png</file>
-        <file>heightmap-3.png</file>
+    <qresource>
+        <file>textures/cube.png</file>
     </qresource>
 </RCC>

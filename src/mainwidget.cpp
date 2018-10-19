@@ -76,7 +76,6 @@ MainWidget::~MainWidget()
     doneCurrent();
 }
 
-//! [0]
 void MainWidget::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_E) {
@@ -108,9 +107,7 @@ void MainWidget::mousePressEvent(QMouseEvent *e)
 void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 {
 }
-//! [0]
 
-//! [1]
 void MainWidget::timerEvent(QTimerEvent *event)
 {
     QTime new_time = QTime::currentTime();
@@ -122,7 +119,6 @@ void MainWidget::timerEvent(QTimerEvent *event)
     camera = QVector3D(cos(rotation_angle)*15, sin(rotation_angle)*15, 5);
     update();
 }
-//! [1]
 
 void MainWidget::initializeGL()
 {
@@ -133,22 +129,16 @@ void MainWidget::initializeGL()
     initShaders();
     initTextures();
 
-//! [2]
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
 
     // Enable back face culling
     glEnable(GL_CULL_FACE);
-//! [2]
-
-    geometries = new GeometryEngine;
-    geometries->initFromHeightMap("/home/fly/workspace/Moteur de jeux/cube/heightmap-3.png", 10);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(1000.0 / update_fps, this);
 }
 
-//! [3]
 void MainWidget::initShaders()
 {
     // Compile vertex shader

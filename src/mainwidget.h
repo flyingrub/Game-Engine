@@ -62,8 +62,7 @@
 #include <QTime>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
-
-class GeometryEngine;
+#include "scene.h"
 
 class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -110,6 +109,8 @@ private:
     static float rotation_speed;
 
     QTime last_time = QTime::currentTime();
+
+    Scene scene;
 };
 
 #endif // MAINWIDGET_H
