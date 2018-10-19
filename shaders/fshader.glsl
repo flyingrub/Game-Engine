@@ -33,7 +33,7 @@ void main()
     vec4 altitudeColor = vec4(vec3(altitude), 1.0);
 
     vec4 color = textureColor * altitudeColor;
-    gl_FragColor = vec4(1);
+    gl_FragColor = textureColor;
 }
 
 //! [0]

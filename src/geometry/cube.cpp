@@ -63,5 +63,4 @@ void Cube::createGeometry()
         16, 16, 17, 18, 19, 19, // Face 4 - triangle strip (v16, v17, v18, v19)
         20, 20, 21, 22, 23      // Face 5 - triangle strip (v20, v21, v22, v23)
     };
-    qDebug() << "create";
 }
