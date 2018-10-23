@@ -17,7 +17,7 @@ void Scene::addChild(Scene* s)
     s->parent = this;
 }
 
-Scene* Scene::getParent()
+std::optional<Scene*> Scene::getParent()
 {
     return parent;
 }
@@ -27,7 +27,31 @@ void Scene::setGeometry(std::shared_ptr<Geometry> g)
     geometry = g;
 }
 
-void Scene::updateLocalMatrix(QMatrix4x4 newLocalMatrix)
+QMatrix4x4 Scene::getLocalMatrix()
+{
+    return localMatrix;
+}
+
+void Scene::rotate(float angle, const QVector3D &vector)
+{
+    localMatrix.rotate(angle,vector);
+    updateGlobalMatrix();
+}
+
+void Scene::scale(const QVector3D &vector)
+{
+    localMatrix.scale(vector);
+    updateGlobalMatrix();
+}
+
+void Scene::translate(const QVector3D &vector)
+{
+    localMatrix.translate(vector);
+    updateGlobalMatrix();
+}
+
+
+void Scene::updateMatrix(QMatrix4x4 newLocalMatrix)
 {
     localMatrix = newLocalMatrix;
     updateGlobalMatrix();
@@ -35,7 +59,11 @@ void Scene::updateLocalMatrix(QMatrix4x4 newLocalMatrix)
 
 void Scene::updateGlobalMatrix()
 {
-    globalMatrix = localMatrix * parent->globalMatrix;
+    if (parent) {
+        globalMatrix = localMatrix * parent.value()->globalMatrix;
+    } else {
+        globalMatrix = localMatrix;
+    }
     for (auto const& c : children) {
         c->updateGlobalMatrix();
     }
@@ -44,6 +72,7 @@ void Scene::updateGlobalMatrix()
 void Scene::draw(QOpenGLShaderProgram* program)
 {
     if (geometry) {
+        program->setUniformValue("matrix", globalMatrix);
         geometry.value().get()->draw(program);
     }
     for (auto const& c : children) {

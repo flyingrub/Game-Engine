@@ -43,7 +43,6 @@ void Geometry::calcBoundingBox()
 void Geometry::draw(QOpenGLShaderProgram *program)
 {
     // Tell OpenGL which VBOs to use
-    qDebug() << "draw";
     arrayBuf.bind();
     indexBuf.bind();
 

@@ -103,6 +103,7 @@ private:
     int update_fps;
     float rotation_angle = 0;
     static float rotation_speed;
+    Scene* cubeScene;
 
     Scene scene;
 };

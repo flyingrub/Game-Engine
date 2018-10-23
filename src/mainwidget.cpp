@@ -54,6 +54,7 @@
 #include <cmath>
 #include <QPainter>
 #include "geometry/cube.h"
+#include "geometry/terrain.h"
 
 float MainWidget::rotation_speed = 0.05;
 
@@ -114,9 +115,9 @@ void MainWidget::timerEvent(QTimerEvent *event)
     last_time = new_time;
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
-    rotation_angle += rotation_speed * timeElapsed / 100.0;
-//    camera = QVector3D(cos(rotation_angle)*15, sin(rotation_angle)*15, 5);
-//    update();
+    rotation_angle = rotation_speed * timeElapsed / 10.0;
+    cubeScene->rotate(rotation_angle, {0,0,1});
+    update();
 }
 
 void MainWidget::initializeGL()
@@ -135,10 +136,27 @@ void MainWidget::initializeGL()
     // Enable back face culling
     glEnable(GL_CULL_FACE);
 
-    Scene* cubeScene = new Scene();
+    cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Cube>();
     cubeScene->setGeometry(cube);
-    scene.addChild(cubeScene);
+//    cubeScene->scale({2,2,2});
+    cubeScene->translate({5,0,0});
+
+    Scene* terrainScene = new Scene();
+    shared_ptr<Geometry> terrain = make_shared<Terrain>();
+    terrainScene->setGeometry(terrain);
+
+
+    Scene* wallS = new Scene();
+    shared_ptr<Geometry> wall = make_shared<Terrain>();
+    wallS->setGeometry(wall);
+    wallS->rotate(90, {1,0,0});
+
+
+    scene.addChild(terrainScene);
+    terrainScene->addChild(cubeScene);
+    scene.addChild(wallS);
+
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(1000.0 / update_fps, this);
@@ -206,21 +224,18 @@ void MainWidget::paintGL()
 
     texture->bind();
 
-//! [6]
     // Calculate model view transformation
-    QMatrix4x4 matrix;
+    QMatrix4x4 cameraMatrix;
     // matrix.translate(camera);
     // matrix.rotate(rotation);
 
     QVector3D eye = camera;
     QVector3D center = QVector3D(0.0,0.0,0.0);
     QVector3D up = QVector3D(0,0,1);
-    matrix.lookAt(eye,center,up);
+    cameraMatrix.lookAt(eye,center,up);
 
     // Set modelview-projection matrix
-    program.setUniformValue("projection", projection);
-    program.setUniformValue("matrix", matrix);
-//! [6]
+    program.setUniformValue("projection", projection*cameraMatrix);
 
     // Use texture unit 0 which contains cube.png
     program.setUniformValue("texture", 0);

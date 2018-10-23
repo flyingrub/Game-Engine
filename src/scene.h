@@ -14,15 +14,19 @@ public:
     Scene();
     virtual ~Scene();
     void addChild(Scene* s);
-    Scene* getParent();
+    std::optional<Scene *> getParent();
     void setGeometry(std::shared_ptr<Geometry>);
-    void updateLocalMatrix(QMatrix4x4 newLocalMatrix);
-    void updateGlobalMatrix();
+    QMatrix4x4 getLocalMatrix();
+    void rotate(float angle, const QVector3D &vector);
+    void scale(const QVector3D &vector);
+    void translate(const QVector3D &vector);
+    void updateMatrix(QMatrix4x4 newLocalMatrix);
     void draw(QOpenGLShaderProgram* program);
 private:
+    void updateGlobalMatrix();
     QMatrix4x4 localMatrix;
     QMatrix4x4 globalMatrix;
-    Scene* parent;
+    std::optional<Scene*> parent;
     std::vector<Scene*> children;
     std::optional<std::shared_ptr<Geometry>> geometry;
 };

@@ -5,7 +5,7 @@
 #include <QImage>
 #include <optional>
 
-class Terrain : Geometry
+class Terrain : public Geometry
 {
 public:
     Terrain();

@@ -11,7 +11,7 @@ Terrain::Terrain(int width, int height): width(width), height(height){
 
 }
 
-Terrain::Terrain(QString filename, int with, int height): width(width), height(height) {
+Terrain::Terrain(QString filename, int width, int height): width(width), height(height) {
     QImage img = QImage(filename);
     heightmap = img;
     if (img.isNull()) {
@@ -22,16 +22,16 @@ Terrain::Terrain(QString filename, int with, int height): width(width), height(h
 void Terrain::createGeometry() {
     for (int i=0; i<height; i++) {
         for (int j=0; j<width;j++) {
-            float x = i;
-            float y = j;
+            float x = i - height / 2;
+            float y = j - width / 2;
             float z = 0;
             if (heightmap) {
                 QRgb c = heightmap.value().pixel(i,j);
                 float greyValue = qGray(c);
                 z = 2.0f * greyValue / 255.0f;
             }
-            float positionX = (float) i / (float) (width);
-            float positionY = (float) j / (float) (height);
+            float positionX = (float) i / (float) (width-1);
+            float positionY = (float) j / (float) (height-1);
             vertices.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY)});
         }
     }
