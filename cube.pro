@@ -25,7 +25,8 @@ HEADERS += \
 RESOURCES += \
     shaders.qrc \
     textures.qrc \
-    heightmaps.qrc
+    heightmaps.qrc \
+    geometries.qrc
 
 # install
 target.path = ..

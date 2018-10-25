@@ -17,12 +17,18 @@ struct VertexData
 {
     QVector3D position;
     QVector2D texCoord;
+    QVector3D normal = {0,0,0};
+
+    bool operator<(const VertexData that) const{
+            return memcmp((void*)this, (void*)&that, sizeof(VertexData))>0;
+    }
 };
 
 class Geometry : protected QOpenGLFunctions
 {
 public:
     Geometry();
+    Geometry(QString objFilename);
     virtual ~Geometry();
     void calcBoundingBox();
     void draw(QOpenGLShaderProgram* program);
@@ -32,8 +38,11 @@ protected:
     vector<int> indices;
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
-    virtual void createGeometry() = 0;
+    virtual void createGeometry() {};
     void bind();
+private:
+    void createGeometryFromObj(QString filename);
+    void optimizeIndex();
 };
 
 #endif // RENDEROBJECT_H

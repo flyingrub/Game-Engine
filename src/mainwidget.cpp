@@ -152,10 +152,14 @@ void MainWidget::initializeGL()
     wallS->setGeometry(wall);
     wallS->rotate(90, {1,0,0});
 
+    Scene* stairScene = new Scene();
+    shared_ptr<Geometry> stairs = make_shared<Geometry>(":/geometries/Stairs.obj");
+    stairScene->setGeometry(stairs);
 
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
     scene.addChild(wallS);
+    terrainScene->addChild(stairScene);
 
 
     // Use QBasicTimer because its faster than QTimer
