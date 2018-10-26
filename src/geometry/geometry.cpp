@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <QDir>
 
 Geometry::Geometry() : indexBuf(QOpenGLBuffer::IndexBuffer)
 {
@@ -100,39 +101,41 @@ void Geometry::createGeometryFromObj(QString filename)
     ifstream obj(filename.toStdString());
     string line;
     istringstream iss;
-    if (obj.is_open()) {
-        while ( getline (obj,line) ) {
-            string firstWord = line.substr(0, line.find(" "));
-            if (firstWord == "v") {
-                iss = istringstream(line);
-                iss >> ignore >> f1 >> f2 >> f3;
-                temp_vertices.push_back({f1,f2,f3});
-            }
-            if (firstWord == "vt") {
-                iss = istringstream(line);
-                iss >> ignore >> f1 >> f2;
-                temp_uvs.push_back({f1,f2});
-            }
-            if (firstWord == "vn") {
-                iss = istringstream(line);
-                iss >> ignore >> f1 >> f2 >> f3;
-                temp_vertices.push_back({f1,f2,f3});
-            }
-            if (firstWord == "f") {
-                QString l = QString::fromStdString(line);
-                QStringList face = l.split(" ");
-                for(int i = 1; i <= 3; i++) {
-                    QStringList arg = face[i].split("/");
-                    QVector3D vertex = temp_vertices[arg[0].toInt()];
-                    QVector2D uv = temp_uvs[arg[1].toInt()];
-                    QVector3D normal = temp_normals[arg[2].toInt()];
-                    vertices.push_back({vertex, uv, normal});
-                    indices.push_back(vertices.size() -1);
-                }
+    if (!obj.is_open()) {
+        qDebug() << "createGeometryFromObj: Cannot open filename";
+        return;
+    }
+    while ( getline (obj,line) ) {
+        string firstWord = line.substr(0, line.find(" "));
+        if (firstWord == "v") {
+            iss = istringstream(line);
+            iss >> ignore >> f1 >> f2 >> f3;
+            temp_vertices.push_back({f1,f2,f3});
+        }
+        if (firstWord == "vt") {
+            iss = istringstream(line);
+            iss >> ignore >> f1 >> f2;
+            temp_uvs.push_back({f1,f2});
+        }
+        if (firstWord == "vn") {
+            iss = istringstream(line);
+            iss >> ignore >> f1 >> f2 >> f3;
+            temp_normals.push_back({f1,f2,f3});
+        }
+        if (firstWord == "f") {
+            QString l = QString::fromStdString(line);
+            QStringList face = l.split(" ");
+            for(int i = 1; i <= 3; i++) {
+                QStringList arg = face[i].split("/");
+                QVector3D vertex = temp_vertices[arg[0].toInt()-1];
+                QVector2D uv = temp_uvs[arg[1].toInt()-1];
+                QVector3D normal = temp_normals[arg[2].toInt()-1];
+                vertices.push_back({vertex, uv, normal});
+                indices.push_back(vertices.size() - 1);
             }
         }
-        obj.close();
     }
+    obj.close();
 }
 
 void Geometry::optimizeIndex()

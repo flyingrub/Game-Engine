@@ -104,6 +104,7 @@ private:
     float rotation_angle = 0;
     static float rotation_speed;
     Scene* cubeScene;
+    Scene* terrainScene;
 
     Scene scene;
 };

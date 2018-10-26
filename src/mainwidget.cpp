@@ -116,7 +116,8 @@ void MainWidget::timerEvent(QTimerEvent *event)
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle = rotation_speed * timeElapsed / 10.0;
-    cubeScene->rotate(rotation_angle, {0,0,1});
+//    cubeScene->rotate(rotation_angle, {0,0,1});
+//    scene.rotate(rotation_angle*0.5, {0,0,1});
     update();
 }
 
@@ -142,7 +143,7 @@ void MainWidget::initializeGL()
 //    cubeScene->scale({2,2,2});
     cubeScene->translate({5,0,0});
 
-    Scene* terrainScene = new Scene();
+    terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>();
     terrainScene->setGeometry(terrain);
 
@@ -153,13 +154,13 @@ void MainWidget::initializeGL()
     wallS->rotate(90, {1,0,0});
 
     Scene* stairScene = new Scene();
-    shared_ptr<Geometry> stairs = make_shared<Geometry>(":/geometries/Stairs.obj");
+    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
     stairScene->setGeometry(stairs);
 
-    scene.addChild(terrainScene);
-    terrainScene->addChild(cubeScene);
-    scene.addChild(wallS);
-    terrainScene->addChild(stairScene);
+    scene.addChild(stairScene);
+//    terrainScene->addChild(cubeScene);
+//    terrainScene->addChild(wallS);
+//    terrainScene->addChild(stairScene);
 
 
     // Use QBasicTimer because its faster than QTimer
