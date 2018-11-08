@@ -12,7 +12,8 @@ SOURCES += \
     src/geometry/terrain.cpp \
     src/geometry/cube.cpp \
     src/geometry/geometry.cpp \
-    src/geometry/octreeterrain.cpp
+    src/geometry/octreeterrain.cpp \
+    src/camera.cpp
 
 HEADERS += \
     src/mainwidget.h \
@@ -20,7 +21,8 @@ HEADERS += \
     src/geometry/terrain.h \
     src/geometry/cube.h \
     src/geometry/geometry.h \
-    src/geometry/octreeterrain.h
+    src/geometry/octreeterrain.h \
+    src/camera.h
 
 RESOURCES += \
     shaders.qrc \

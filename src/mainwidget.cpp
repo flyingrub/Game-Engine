@@ -64,7 +64,6 @@ MainWidget::MainWidget(QWidget *parent, int update_fps) :
     texture(0),
     update_fps(update_fps)
 {
-    camera = {0,0,5};
 }
 
 MainWidget::~MainWidget()
@@ -79,17 +78,17 @@ MainWidget::~MainWidget()
 void MainWidget::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_E) {
-        camera.setZ(camera.z() - 0.2);
+//        camera.setZ(camera.z() - 0.2);
     } else if (event->key() == Qt::Key_A) {
-        camera.setZ(camera.z() + 0.2);
+//        camera.setZ(camera.z() + 0.2);
     } else if (event->key() == Qt::Key_D) {
-        camera.setX(camera.x() - 0.2);
+//        camera.setX(camera.x() - 0.2);
     } else if (event->key() == Qt::Key_Q) {
-        camera.setX(camera.x() + 0.2);
+//        camera.setX(camera.x() + 0.2);
     } else if (event->key() == Qt::Key_Z) {
-        camera.setY(camera.y() - 0.2);
+//        camera.setY(camera.y() - 0.2);
     } else if (event->key() == Qt::Key_S) {
-        camera.setY(camera.y() + 0.2);
+//        camera.setY(camera.y() + 0.2);
     } if (event->key() == Qt::Key_Up) {
         rotation_speed += 0.001;
     } else if (event->key() == Qt::Key_Down) {
@@ -100,12 +99,21 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
 
 void MainWidget::mousePressEvent(QMouseEvent *e)
 {
-    // Save mouse press position
-    mousePressPosition = QVector2D(e->localPos());
 }
 
-void MainWidget::mouseReleaseEvent(QMouseEvent *e)
+void MainWidget::mouseMoveEvent(QMouseEvent* event) {
+
+    QVector2D center(width() / 2, height() / 2);
+    camera.handleMouseMove(event,  center);
+    QCursor c = cursor();
+    c.setPos(mapToGlobal(center.toPoint()));
+    c.setShape(Qt::BlankCursor);
+    setCursor(c);
+}
+
+void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+
 }
 
 void MainWidget::timerEvent(QTimerEvent *event)
@@ -117,7 +125,7 @@ void MainWidget::timerEvent(QTimerEvent *event)
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle = rotation_speed * timeElapsed / 10.0;
 //    cubeScene->rotate(rotation_angle, {0,0,1});
-    terrainScene->rotate({0,0,rotation_angle*0.5f});
+    cubeScene->rotate({0,0,rotation_angle*0.5f});
     update();
 }
 
@@ -151,7 +159,7 @@ void MainWidget::initializeGL()
     Scene* wallS = new Scene();
     shared_ptr<Geometry> wall = make_shared<Terrain>();
     wallS->setGeometry(wall);
-//    wallS->rotate(90, {1,0,0});
+    wallS->rotate({90,0,0});
 
     Scene* stairScene = new Scene();
     shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
@@ -160,7 +168,7 @@ void MainWidget::initializeGL()
 
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
-//    terrainScene->addChild(wallS);
+    terrainScene->addChild(wallS);
     cubeScene->addChild(stairScene);
 
 
@@ -229,20 +237,9 @@ void MainWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     texture->bind();
-//    scene.updateGlobalMatrix();
-
-    // Calculate model view transformation
-    QMatrix4x4 cameraMatrix;
-    // matrix.translate(camera);
-    // matrix.rotate(rotation);
-
-    QVector3D eye = camera;
-    QVector3D center = QVector3D(0.0,0.0,0.0);
-    QVector3D up = QVector3D(0,0,1);
-    cameraMatrix.lookAt(eye,center,up);
 
     // Set modelview-projection matrix
-    program.setUniformValue("projection", projection*cameraMatrix);
+    program.setUniformValue("projection", projection*camera.getMatrix());
 
     // Use texture unit 0 which contains cube.png
     program.setUniformValue("texture", 0);

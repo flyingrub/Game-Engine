@@ -61,6 +61,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include "scene.h"
+#include "camera.h"
 
 class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -73,6 +74,7 @@ public:
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void timerEvent(QTimerEvent *e) override;
 
@@ -95,7 +97,7 @@ private:
     QVector2D mousePressPosition;
     QVector3D rotationAxis;
     QQuaternion rotation;
-    QVector3D camera;
+    Camera camera;
 
     QTime start_time = QTime::currentTime();
     QTime last_time = QTime::currentTime();
