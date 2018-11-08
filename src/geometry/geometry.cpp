@@ -15,6 +15,7 @@ Geometry::Geometry() : indexBuf(QOpenGLBuffer::IndexBuffer)
 
 Geometry::Geometry(QString objFilename) : Geometry()
 {
+    isFromObj = true;
     createGeometryFromObj(objFilename);
     bind();
 }
@@ -75,7 +76,8 @@ void Geometry::draw(QOpenGLShaderProgram *program)
     program->enableAttributeArray(normalLocation);
     program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 
-    glDrawElements(GL_TRIANGLE_STRIP, indices.size(), GL_UNSIGNED_INT, 0);
+    GLenum type = isFromObj ? GL_TRIANGLES : GL_TRIANGLE_STRIP;
+    glDrawElements(type, indices.size(), GL_UNSIGNED_INT, 0);
 }
 
 void Geometry::bind() {

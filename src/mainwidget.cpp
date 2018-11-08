@@ -117,7 +117,7 @@ void MainWidget::timerEvent(QTimerEvent *event)
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle = rotation_speed * timeElapsed / 10.0;
 //    cubeScene->rotate(rotation_angle, {0,0,1});
-//    scene.rotate(rotation_angle*0.5, {0,0,1});
+    terrainScene->rotate({0,0,rotation_angle*0.5f});
     update();
 }
 
@@ -140,27 +140,28 @@ void MainWidget::initializeGL()
     cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Cube>();
     cubeScene->setGeometry(cube);
-//    cubeScene->scale({2,2,2});
-    cubeScene->translate({5,0,0});
+    cubeScene->translate({5,1,0});
+    cubeScene->scale({2,2,2});
 
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>();
     terrainScene->setGeometry(terrain);
-
+    terrainScene->translate({5,5,0});
 
     Scene* wallS = new Scene();
     shared_ptr<Geometry> wall = make_shared<Terrain>();
     wallS->setGeometry(wall);
-    wallS->rotate(90, {1,0,0});
+//    wallS->rotate(90, {1,0,0});
 
     Scene* stairScene = new Scene();
     shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
     stairScene->setGeometry(stairs);
+    stairScene->rotate({90,0,0});
 
-    scene.addChild(stairScene);
-//    terrainScene->addChild(cubeScene);
+    scene.addChild(terrainScene);
+    terrainScene->addChild(cubeScene);
 //    terrainScene->addChild(wallS);
-//    terrainScene->addChild(stairScene);
+    cubeScene->addChild(stairScene);
 
 
     // Use QBasicTimer because its faster than QTimer
@@ -228,6 +229,7 @@ void MainWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     texture->bind();
+//    scene.updateGlobalMatrix();
 
     // Calculate model view transformation
     QMatrix4x4 cameraMatrix;
@@ -250,5 +252,6 @@ void MainWidget::paintGL()
     QVector3D light_color = { 1, 1, 1 };
     program.setUniformValue("light_pos", light_pos);
     program.setUniformValue("light_color", light_color);
+    scene.updateGlobalMatrix();
     scene.draw(&program);
 }

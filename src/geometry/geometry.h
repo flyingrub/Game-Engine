@@ -43,6 +43,7 @@ protected:
 private:
     void createGeometryFromObj(QString filename);
     void optimizeIndex();
+    bool isFromObj = false;
 };
 
 #endif // RENDEROBJECT_H

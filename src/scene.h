@@ -17,14 +17,16 @@ public:
     std::optional<Scene *> getParent();
     void setGeometry(std::shared_ptr<Geometry>);
     QMatrix4x4 getLocalMatrix();
-    void rotate(float angle, const QVector3D &vector);
+    void updateGlobalMatrix();
+    void rotate(const QVector3D &vector);
     void scale(const QVector3D &vector);
     void translate(const QVector3D &vector);
-    void updateMatrix(QMatrix4x4 newLocalMatrix);
     void draw(QOpenGLShaderProgram* program);
+
 private:
-    void updateGlobalMatrix();
-    QMatrix4x4 localMatrix;
+    QVector3D m_translation = {0,0,0};
+    QVector3D m_rotation = {0,0,0};
+    QVector3D m_scale = {1,1,1};
     QMatrix4x4 globalMatrix;
     std::optional<Scene*> parent;
     std::vector<Scene*> children;

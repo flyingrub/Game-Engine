@@ -27,40 +27,38 @@ void Scene::setGeometry(std::shared_ptr<Geometry> g)
     geometry = g;
 }
 
-QMatrix4x4 Scene::getLocalMatrix()
+void Scene::rotate(const QVector3D &vector)
 {
-    return localMatrix;
-}
-
-void Scene::rotate(float angle, const QVector3D &vector)
-{
-    localMatrix.rotate(angle,vector);
-    updateGlobalMatrix();
+    m_rotation += vector;
 }
 
 void Scene::scale(const QVector3D &vector)
 {
-    localMatrix.scale(vector);
-    updateGlobalMatrix();
+   m_scale += vector;
 }
 
 void Scene::translate(const QVector3D &vector)
 {
-    localMatrix.translate(vector);
-    updateGlobalMatrix();
+    m_translation += vector;
 }
 
 
-void Scene::updateMatrix(QMatrix4x4 newLocalMatrix)
+QMatrix4x4 Scene::getLocalMatrix()
 {
-    localMatrix = newLocalMatrix;
-    updateGlobalMatrix();
+    QMatrix4x4 localMatrix;
+    localMatrix.translate(m_translation);
+    localMatrix.rotate(m_rotation.x(), {1,0,0});
+    localMatrix.rotate(m_rotation.y(), {0,1,0});
+    localMatrix.rotate(m_rotation.z(), {0,0,1});
+    localMatrix.scale(m_scale);
+    return localMatrix;
 }
 
 void Scene::updateGlobalMatrix()
 {
+    QMatrix4x4 localMatrix = getLocalMatrix();
     if (parent) {
-        globalMatrix = localMatrix * parent.value()->globalMatrix;
+        globalMatrix = parent.value()->globalMatrix * localMatrix;
     } else {
         globalMatrix = localMatrix;
     }
