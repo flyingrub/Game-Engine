@@ -10,12 +10,14 @@ public:
     Camera();
     QMatrix4x4 getMatrix();
     void handleMouseMove(QMouseEvent* e, QVector2D center);
-    void translate(QVector3D t);
+    void handleInput(QKeyEvent *event);
 private:
-    QVector3D position = {-5,-5,5};
-    QVector3D lookAt = {0,0,5};
+    QVector3D position = {-5,0,1};
+    QVector3D front = {1,0,0};
     QVector3D up = {0,0,1};
-    QMatrix4x4 cameraMatrix;
+    float yaw = 0;
+    float pitch = 0;
+    float cameraSpeed = 0.2f;
 };
 
 #endif // CAMERA_H

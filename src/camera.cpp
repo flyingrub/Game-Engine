@@ -1,32 +1,48 @@
 #include "camera.h"
 #include "QDebug"
+#include "QtMath"
+
 Camera::Camera()
 {
-    cameraMatrix.lookAt(position,lookAt,up);
 }
-
-
 
 QMatrix4x4 Camera::getMatrix()
 {
-    return cameraMatrix;
+    QMatrix4x4 m;
+    m.lookAt(position, position + front, up);
+    return m;
 }
 
 void Camera::handleMouseMove(QMouseEvent *event, QVector2D center)
 {
-    QVector2D diff = QVector2D(event->localPos()) - center;
-
-    QVector3D left = {1,0,0};
-    left = (cameraMatrix * left);
-    qDebug() << left;
-    cameraMatrix.rotate(diff.x()/10.0, {0,0,1});
-
-    cameraMatrix.rotate(diff.y()/10.0, left.normalized());
-
-//    cameraMatrix.rotate(acc, cross)
+    QVector2D diff = center - QVector2D(event->localPos());
+    yaw += diff.x()/10;
+    pitch += diff.y()/10;
+    if(pitch > 89.0f)
+      pitch =  89.0f;
+    if(pitch < -89.0f)
+      pitch = -89.0f;
+    front.setX(qCos(qDegreesToRadians(pitch)) * qCos(qDegreesToRadians(yaw)));
+    front.setZ(qSin(qDegreesToRadians(pitch)));
+    front.setY(qCos(qDegreesToRadians(pitch)) * qSin(qDegreesToRadians(yaw)));
+    front.normalize();
 }
 
-void Camera::translate(QVector3D t)
+void Camera::handleInput(QKeyEvent *event)
 {
-
+    if (event->key() == Qt::Key_E) {
+        position -= cameraSpeed * up;
+    } else if (event->key() == Qt::Key_A) {
+        position += cameraSpeed * up;
+    } else if (event->key() == Qt::Key_D) {
+        QVector3D right = QVector3D::crossProduct(front,up).normalized();
+        position += cameraSpeed * right;
+    } else if (event->key() == Qt::Key_Q) {
+        QVector3D right = QVector3D::crossProduct(front,up).normalized();
+        position -= cameraSpeed * right;
+    } else if (event->key() == Qt::Key_Z) {
+        position += cameraSpeed * front;
+    } else if (event->key() == Qt::Key_S) {
+        position -= cameraSpeed * front;
+    }
 }

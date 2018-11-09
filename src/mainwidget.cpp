@@ -77,23 +77,12 @@ MainWidget::~MainWidget()
 
 void MainWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_E) {
-//        camera.setZ(camera.z() - 0.2);
-    } else if (event->key() == Qt::Key_A) {
-//        camera.setZ(camera.z() + 0.2);
-    } else if (event->key() == Qt::Key_D) {
-//        camera.setX(camera.x() - 0.2);
-    } else if (event->key() == Qt::Key_Q) {
-//        camera.setX(camera.x() + 0.2);
-    } else if (event->key() == Qt::Key_Z) {
-//        camera.setY(camera.y() - 0.2);
-    } else if (event->key() == Qt::Key_S) {
-//        camera.setY(camera.y() + 0.2);
-    } if (event->key() == Qt::Key_Up) {
+    if (event->key() == Qt::Key_Up) {
         rotation_speed += 0.001;
     } else if (event->key() == Qt::Key_Down) {
         rotation_speed -= 0.001;
     }
+    camera.handleInput(event);
     update();
 }
 
