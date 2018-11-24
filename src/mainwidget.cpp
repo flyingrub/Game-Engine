@@ -135,25 +135,23 @@ void MainWidget::initializeGL()
     glEnable(GL_CULL_FACE);
 
     cubeScene = new Scene();
-    shared_ptr<Geometry> cube = make_shared<Cube>();
+    shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene->setGeometry(cube);
-    cubeScene->translate({5,1,0});
-    cubeScene->scale({2,2,2});
+    cubeScene->translate({-1,1,1});
 
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>();
     terrainScene->setGeometry(terrain);
-    terrainScene->translate({5,5,0});
 
     Scene* wallS = new Scene();
-    shared_ptr<Geometry> wall = make_shared<Terrain>();
+    shared_ptr<Geometry> wall = make_shared<Geometry>("geometries/Cube.obj");
     wallS->setGeometry(wall);
-    wallS->rotate({90,0,0});
+    wallS->translate({2,2,2});
 
     Scene* stairScene = new Scene();
-    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
+    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Cube.obj");
     stairScene->setGeometry(stairs);
-    stairScene->rotate({90,0,0});
+    stairScene->translate({1,1,1});
 
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
@@ -168,11 +166,11 @@ void MainWidget::initializeGL()
 void MainWidget::initShaders()
 {
     // Compile vertex shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/vshader.glsl"))
+    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
 
     // Compile fragment shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fshader.glsl"))
+    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colorAndLight.glsl"))
         close();
 
     // Link shader pipeline
@@ -182,6 +180,19 @@ void MainWidget::initShaders()
     // Bind shader pipeline for use
     if (!program.bind())
         close();
+
+    // Compile vertex shader
+    if (!postProcessing.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
+        close();
+
+    // Compile fragment shader
+    if (!postProcessing.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/outlineShader.glsl"))
+        close();
+
+    // Link shader pipeline
+    if (!postProcessing.link())
+        close();
+
 }
 //! [3]
 
@@ -189,7 +200,7 @@ void MainWidget::initShaders()
 void MainWidget::initTextures()
 {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage(":/textures/cube.png").mirrored());
+    texture = new QOpenGLTexture(QImage(":/textures/test.png").mirrored());
 
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
@@ -209,8 +220,7 @@ void MainWidget::resizeGL(int w, int h)
     // Calculate aspect ratio
     qreal aspect = qreal(w) / qreal(h ? h : 1);
 
-    // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const qreal zNear = 0.1, zFar = 10000.0, fov = 45.0;
+    const qreal zNear = 0.1, zFar = 100.0, fov = 45.0;
 
     // Reset projection
     projection.setToIdentity();
@@ -225,19 +235,36 @@ void MainWidget::paintGL()
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(this->width(),this->height());
+    framebuffer.bind();
+
     texture->bind();
+    program.setUniformValue("texture", 0);
 
     // Set modelview-projection matrix
     program.setUniformValue("projection", projection*camera.getMatrix());
-
-    // Use texture unit 0 which contains cube.png
-    program.setUniformValue("texture", 0);
-
     program.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     QVector3D light_pos = { 0, 0, 10 };
     QVector3D light_color = { 1, 1, 1 };
     program.setUniformValue("light_pos", light_pos);
     program.setUniformValue("light_color", light_color);
+
     scene.updateGlobalMatrix();
     scene.draw(&program);
+    framebuffer.release();
+
+    // PostProcess
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    postProcessing.bind();
+    glBindTexture(GL_TEXTURE_2D, framebuffer.texture());
+    int vertexLocation = postProcessing.attributeLocation("a_position");
+    postProcessing.enableAttributeArray(vertexLocation);
+    postProcessing.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
+
+    int texcoordLocation = postProcessing.attributeLocation("a_texcoord");
+    postProcessing.enableAttributeArray(texcoordLocation);
+    postProcessing.setAttributeBuffer(texcoordLocation, GL_FLOAT, 1, 2, 4*sizeof(float));
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

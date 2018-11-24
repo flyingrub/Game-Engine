@@ -53,6 +53,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLFramebufferObject>
 #include <QMatrix4x4>
 #include <QQuaternion>
 #include <QVector2D>
@@ -91,6 +92,7 @@ protected:
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram program;
+    QOpenGLShaderProgram postProcessing;
     QOpenGLTexture *texture;
     QMatrix4x4 projection;
 
@@ -109,6 +111,17 @@ private:
     Scene* terrainScene;
 
     Scene scene;
+
+    float quadVertices[24] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
 };
 
 #endif // MAINWIDGET_H

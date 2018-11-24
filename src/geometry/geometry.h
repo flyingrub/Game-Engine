@@ -17,7 +17,7 @@ struct VertexData
 {
     QVector3D position;
     QVector2D texCoord;
-    QVector3D normal = {0,0,0};
+    QVector3D normal = {1,1,1};
 
     bool operator<(const VertexData that) const{
             return memcmp((void*)this, (void*)&that, sizeof(VertexData))>0;
