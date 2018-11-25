@@ -177,10 +177,6 @@ void MainWidget::initShaders()
     if (!program.link())
         close();
 
-    // Bind shader pipeline for use
-    if (!program.bind())
-        close();
-
     // Compile vertex shader
     if (!postProcessing.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
         close();
@@ -232,12 +228,14 @@ void MainWidget::resizeGL(int w, int h)
 
 void MainWidget::paintGL()
 {
-    // Clear color and depth buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(this->width(),this->height());
+    QOpenGLFramebufferObjectFormat format;
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(this->width(),this->height(), format);
     framebuffer.bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
+    program.bind();
     texture->bind();
     program.setUniformValue("texture", 0);
 
@@ -255,16 +253,25 @@ void MainWidget::paintGL()
 
     // PostProcess
     glDisable(GL_DEPTH_TEST);
+//    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     postProcessing.bind();
     glBindTexture(GL_TEXTURE_2D, framebuffer.texture());
+    postProcessing.setUniformValue("texture", 0);
+
+    QOpenGLBuffer quadVerticesBuff;
+    quadVerticesBuff.create();
+    quadVerticesBuff.bind();
+    quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
+
     int vertexLocation = postProcessing.attributeLocation("a_position");
     postProcessing.enableAttributeArray(vertexLocation);
     postProcessing.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
 
     int texcoordLocation = postProcessing.attributeLocation("a_texcoord");
     postProcessing.enableAttributeArray(texcoordLocation);
-    postProcessing.setAttributeBuffer(texcoordLocation, GL_FLOAT, 1, 2, 4*sizeof(float));
+    postProcessing.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
+//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    quadVerticesBuff.destroy();
 }
