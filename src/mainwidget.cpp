@@ -228,9 +228,10 @@ void MainWidget::resizeGL(int w, int h)
 
 void MainWidget::paintGL()
 {
+    glEnable(GL_MULTISAMPLE);
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(this->width(),this->height(), format);
+    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(size(), format);
     framebuffer.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -240,7 +241,8 @@ void MainWidget::paintGL()
     program.setUniformValue("texture", 0);
 
     // Set modelview-projection matrix
-    program.setUniformValue("projection", projection*camera.getMatrix());
+    program.setUniformValue("view", camera.getMatrix());
+    program.setUniformValue("projection", projection);
     program.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     QVector3D light_pos = { 0, 0, 10 };
     QVector3D light_color = { 1, 1, 1 };
@@ -258,6 +260,7 @@ void MainWidget::paintGL()
     postProcessing.bind();
     glBindTexture(GL_TEXTURE_2D, framebuffer.texture());
     postProcessing.setUniformValue("texture", 0);
+    postProcessing.setUniformValue("u_resolution", size());
 
     QOpenGLBuffer quadVerticesBuff;
     quadVerticesBuff.create();

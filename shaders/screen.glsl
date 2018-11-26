@@ -1,7 +1,6 @@
 #version 130
 in vec2 a_position;
 in vec2 a_texcoord;
-
 out vec2 texcoord;
 
 void main()

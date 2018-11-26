@@ -7,14 +7,16 @@ precision mediump float;
 #endif
 
 uniform float time;
-uniform vec3 light_pos;
 uniform vec3 light_color;
+uniform vec3 light_pos;
 uniform sampler2D texture;
 
 
 in vec2 v_texcoord;
-in float altitude;
 in vec3 v_normal;
+in vec3 v_frag_pos;
+
+in float altitude;
 
 float near = 1.0;
 float far  = 100.0;
@@ -36,7 +38,7 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
 void main()
 {
     float depth = LinearizeDepth(gl_FragCoord.z) / 100.0; // divide by far for demonstration
-    float d = map(depth, 10.0, 0.0, 0.0,1.0);
+    float d = map(depth, 1.0, 0.0, 0.0,1.0);
 
     vec4 textureColor = texture2D(texture, v_texcoord);
     vec4 depthColor = vec4(vec3(depth), 1.0);
@@ -45,6 +47,12 @@ void main()
     vec3 v_normal = map(v_normal, -1.0,1.0, 0.0,1.0);
     vec4 normalColor = vec4(v_normal,1.0);
     normalColor.b = d;
+
+    vec3 n = normalize(v_normal);
+    vec3 l = normalize(light_pos - v_frag_pos);
+    float diff = max(dot(n, l), 0.0);
+    vec3 diffuse = diff * light_color;
+    vec4 lColor = vec4(diffuse, 1.0);
 
     gl_FragColor = textureColor;
 }

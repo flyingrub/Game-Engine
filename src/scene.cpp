@@ -70,7 +70,7 @@ void Scene::updateGlobalMatrix()
 void Scene::draw(QOpenGLShaderProgram* program)
 {
     if (geometry) {
-        program->setUniformValue("matrix", globalMatrix);
+        program->setUniformValue("model", globalMatrix);
         geometry.value().get()->draw(program);
     }
     for (auto const& c : children) {
