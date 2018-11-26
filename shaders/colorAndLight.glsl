@@ -54,5 +54,5 @@ void main()
     vec3 diffuse = diff * light_color;
     vec4 lColor = vec4(diffuse, 1.0);
 
-    gl_FragColor = textureColor;
+    gl_FragColor = textureColor * lColor;
 }

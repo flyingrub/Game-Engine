@@ -22,7 +22,7 @@ out vec3 v_frag_pos;
 //! [0]
 void main()
 {
-    mat4 mvp = projection * view;
+    mat4 mvp = projection * view * model;
     // Calculate vertex position in screen space
     gl_Position = mvp * a_position;
 
