@@ -58,6 +58,35 @@
 
 float MainWidget::rotation_speed = 0.05;
 
+struct Light {
+    QVector3D position;
+    QVector3D color;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+struct Lights {
+    Light* lights;
+    int size;
+    Lights(int size) {
+        this->size = size;
+        lights = new Light[size];
+    }
+    void toProgram(QOpenGLShaderProgram *program) {
+        string base= "pointLights[0].";
+        for (int i =0; i<size; i++) {
+            base[base.size()-3] += (char)i;
+            program->setUniformValue((base + "color").c_str(), lights[i].color);
+            program->setUniformValue((base + "position").c_str(), lights[i].position);
+            program->setUniformValue((base + "constant").c_str(), lights[i].constant);
+            program->setUniformValue((base + "linear").c_str(), lights[i].linear);
+            program->setUniformValue((base + "quadratic").c_str(), lights[i].quadratic);
+        }
+    }
+};
+
 
 MainWidget::MainWidget(QWidget *parent, int update_fps) :
     QOpenGLWidget(parent),
@@ -244,10 +273,21 @@ void MainWidget::paintGL()
     program.setUniformValue("view", camera.getMatrix());
     program.setUniformValue("projection", projection);
     program.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
-    QVector3D light_pos = { 0, 0, 10 };
-    QVector3D light_color = { 1, 1, 1 };
-    program.setUniformValue("light_pos", light_pos);
-    program.setUniformValue("light_color", light_color);
+    program.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
+    program.setUniformValue("dirLight.color", QVector3D{0.5,0.5,0.5});
+
+    Lights lights(2);
+    lights.lights[0] = {
+        {0,0,6},
+        {1,0,0},
+        1,0.045f,0.0075f
+    };
+    lights.lights[1] = {
+        {6,6,6},
+        {0,0,0.5},
+        1,0.022f,0.0019
+    };
+    lights.toProgram(&program);
 
     scene.updateGlobalMatrix();
     scene.draw(&program);

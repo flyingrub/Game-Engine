@@ -6,10 +6,20 @@ precision mediump int;
 precision mediump float;
 #endif
 
-uniform float time;
-uniform vec3 light_color;
-uniform vec3 light_pos;
+struct Light {
+    vec3 position;
+    vec3 color;
+
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+const int pointLightsNumber = 2;
+uniform Light pointLights[pointLightsNumber];
+uniform Light dirLight;
 uniform sampler2D texture;
+uniform float time;
 
 
 in vec2 v_texcoord;
@@ -35,6 +45,26 @@ float map(float value, float inMin, float inMax, float outMin, float outMax) {
   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 }
 
+vec4 calcDirLight(Light light, vec3 normal)
+{
+    vec3 lightDir = normalize(-light.position);
+    // diffuse shading
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = diff*light.color;
+    return vec4(diffuse, 1.0);
+}
+
+vec4 calcPointLight(Light light, vec3 normal)
+{
+    vec3 lightDir = normalize(light.position - v_frag_pos);
+    float diff = max(dot(normal, lightDir), 0.0);
+    float distance    = length(light.position - v_frag_pos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance +
+                        light.quadratic * (distance * distance));
+    vec3 diffuse = diff * light.color * attenuation;
+    return vec4(diffuse, 1.0);
+}
+
 void main()
 {
     float depth = LinearizeDepth(gl_FragCoord.z) / 100.0; // divide by far for demonstration
@@ -49,10 +79,10 @@ void main()
     normalColor.b = d;
 
     vec3 n = normalize(v_normal);
-    vec3 l = normalize(light_pos - v_frag_pos);
-    float diff = max(dot(n, l), 0.0);
-    vec3 diffuse = diff * light_color;
-    vec4 lColor = vec4(diffuse, 1.0);
+    vec4 light_color = calcDirLight(dirLight, n);
+    for(int i = 0; i < pointLightsNumber; i++) {
+       light_color += calcPointLight(pointLights[i], n);
+    }
 
-    gl_FragColor = textureColor * lColor;
+    gl_FragColor = textureColor * light_color;
 }
