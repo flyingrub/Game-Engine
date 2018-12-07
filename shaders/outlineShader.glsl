@@ -38,7 +38,7 @@ float kernel[9] = float[](
     1.0 / 16, 2.0 / 16, 1.0 / 16
 );
 
-vec4 edgeColor = vec4(1,0,0,1);
+vec4 edgeColor = vec4(0.3,0.2,0.4,1);
 float threshold = 0.1;
 
 void main()
@@ -49,8 +49,10 @@ void main()
     }
     neighboor/=8;
     vec4 col = texture2D(texture, texcoord);
-    float s = step(threshold, length(col - neighboor));
-    gl_FragColor = mix(col, col, s);
+    // float s = step(threshold, length(col - neighboor));
+    // gl_FragColor = mix(col, col, s);
+    if (length(col - neighboor) < threshold) discard;
+    gl_FragColor = edgeColor;
 }
 
 

@@ -2,6 +2,7 @@
     <qresource>
         <file>shaders/camera.glsl</file>
         <file>shaders/colorAndLight.glsl</file>
+        <file>shaders/normalColor.glsl</file>
         <file>shaders/screen.glsl</file>
         <file>shaders/outlineShader.glsl</file>
     </qresource>

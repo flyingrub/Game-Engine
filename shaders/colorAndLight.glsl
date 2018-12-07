@@ -26,7 +26,7 @@ in vec2 v_texcoord;
 in vec3 v_normal;
 in vec3 v_frag_pos;
 
-in float altitude;
+out float altitude;
 
 float near = 1.0;
 float far  = 100.0;
@@ -84,5 +84,5 @@ void main()
        light_color += calcPointLight(pointLights[i], n);
     }
 
-    gl_FragColor = textureColor * light_color;
+    gl_FragColor = light_color;
 }

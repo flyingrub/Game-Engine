@@ -91,8 +91,10 @@ protected:
 
 private:
     QBasicTimer timer;
-    QOpenGLShaderProgram program;
-    QOpenGLShaderProgram postProcessing;
+    QOpenGLShaderProgram colorLightProgram;
+    QOpenGLShaderProgram outlineProgram;
+    QOpenGLShaderProgram normalColorProgram;
+    QOpenGLShaderProgram finalProgram;
     QOpenGLTexture *texture;
     QMatrix4x4 projection;
 

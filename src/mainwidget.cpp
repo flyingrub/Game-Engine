@@ -195,27 +195,39 @@ void MainWidget::initializeGL()
 void MainWidget::initShaders()
 {
     // Compile vertex shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
+    if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
 
     // Compile fragment shader
-    if (!program.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colorAndLight.glsl"))
+    if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colorAndLight.glsl"))
         close();
 
     // Link shader pipeline
-    if (!program.link())
+    if (!colorLightProgram.link())
         close();
 
     // Compile vertex shader
-    if (!postProcessing.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
+    if (!normalColorProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
 
     // Compile fragment shader
-    if (!postProcessing.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/outlineShader.glsl"))
+    if (!normalColorProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/normalColor.glsl"))
         close();
 
     // Link shader pipeline
-    if (!postProcessing.link())
+    if (!normalColorProgram.link())
+        close();
+
+    // Compile vertex shader
+    if (!outlineProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
+        close();
+
+    // Compile fragment shader
+    if (!outlineProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/outlineShader.glsl"))
+        close();
+
+    // Link shader pipeline
+    if (!outlineProgram.link())
         close();
 
 }
@@ -257,29 +269,45 @@ void MainWidget::resizeGL(int w, int h)
 
 void MainWidget::paintGL()
 {
+    scene.updateGlobalMatrix();
+
     glEnable(GL_MULTISAMPLE);
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    QOpenGLFramebufferObject framebuffer = QOpenGLFramebufferObject(size(), format);
-    framebuffer.bind();
+
+    // Normal Rendering
+    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
+    glEnable(GL_MULTISAMPLE);
+    frameNormal.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    program.bind();
-    texture->bind();
-    program.setUniformValue("texture", 0);
+    normalColorProgram.bind();
+    normalColorProgram.setUniformValue("view", camera.getMatrix());
+    normalColorProgram.setUniformValue("projection", projection);
 
-    // Set modelview-projection matrix
-    program.setUniformValue("view", camera.getMatrix());
-    program.setUniformValue("projection", projection);
-    program.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
-    program.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    program.setUniformValue("dirLight.color", QVector3D{0.5,0.5,0.5});
+    scene.draw(&colorLightProgram);
+    frameNormal.release();
+
+
+    // Light Render
+//    glClearColor(1,1,1,1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
+    colorLightProgram.bind();
+    texture->bind();
+    colorLightProgram.setUniformValue("texture", 0);
+    colorLightProgram.setUniformValue("view", camera.getMatrix());
+    colorLightProgram.setUniformValue("projection", projection);
+    colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
+    colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.5,0.5,0.5});
 
     Lights lights(2);
     lights.lights[0] = {
         {0,0,6},
-        {1,0,0},
+        {1,0.5,0.5},
         1,0.045f,0.0075f
     };
     lights.lights[1] = {
@@ -287,34 +315,30 @@ void MainWidget::paintGL()
         {0,0,0.5},
         1,0.022f,0.0019
     };
-    lights.toProgram(&program);
+    lights.toProgram(&colorLightProgram);
+    scene.draw(&colorLightProgram);
 
-    scene.updateGlobalMatrix();
-    scene.draw(&program);
-    framebuffer.release();
-
-    // PostProcess
+    // Outline Detection
     glDisable(GL_DEPTH_TEST);
-//    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    postProcessing.bind();
-    glBindTexture(GL_TEXTURE_2D, framebuffer.texture());
-    postProcessing.setUniformValue("texture", 0);
-    postProcessing.setUniformValue("u_resolution", size());
+    outlineProgram.bind();
+    glBindTexture(GL_TEXTURE_2D, frameNormal.texture());
+    outlineProgram.setUniformValue("texture", 0);
+    outlineProgram.setUniformValue("u_resolution", size());
 
     QOpenGLBuffer quadVerticesBuff;
     quadVerticesBuff.create();
     quadVerticesBuff.bind();
     quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
 
-    int vertexLocation = postProcessing.attributeLocation("a_position");
-    postProcessing.enableAttributeArray(vertexLocation);
-    postProcessing.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
+    int vertexLocation = outlineProgram.attributeLocation("a_position");
+    outlineProgram.enableAttributeArray(vertexLocation);
+    outlineProgram.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
 
-    int texcoordLocation = postProcessing.attributeLocation("a_texcoord");
-    postProcessing.enableAttributeArray(texcoordLocation);
-    postProcessing.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
+    int texcoordLocation = outlineProgram.attributeLocation("a_texcoord");
+    outlineProgram.enableAttributeArray(texcoordLocation);
+    outlineProgram.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
 //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
     quadVerticesBuff.destroy();
 }
