@@ -69,8 +69,13 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
+    static MainWidget* singleton;
     explicit MainWidget(QWidget *parent = nullptr, int update_fps=60);
     ~MainWidget();
+
+    QMatrix4x4 getProjection() const;
+
+    Camera getCamera() const;
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;

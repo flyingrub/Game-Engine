@@ -11,6 +11,46 @@ using namespace std;
 struct BoundingBox {
     QVector3D min;
     QVector3D max;
+    bool initialized;
+
+    BoundingBox()
+        : min(0,0,0)
+        , max(0,0,0)
+        , initialized(false)
+    {}
+
+    void expand(const QVector3D & point)
+    {
+        if(!initialized)
+        {
+            initialized = true;
+            min = point;
+            max = point;
+            return;
+        }
+
+        min.setX(std::min(point.x(), min.x()));
+        min.setY(std::min(point.y(), min.y()));
+        min.setZ(std::min(point.z(), min.z()));
+
+        max.setX(std::max(point.x(), max.x()));
+        max.setY(std::max(point.y(), max.y()));
+        max.setZ(std::max(point.z(), max.z()));
+    }
+
+    bool inView() {
+        if (min.x() > 1.0f) {
+            return false;
+        } else if (min.y() > 1.0f) {
+            return false;
+        } else if (max.x() < -1.0f) {
+            return false;
+        } else if (max.y() < - 1.0f) {
+            return false;
+        }
+        return true;
+    }
+
 };
 
 struct VertexData
@@ -32,6 +72,8 @@ public:
     virtual ~Geometry();
     void calcBoundingBox();
     void draw(QOpenGLShaderProgram* program);
+    BoundingBox getBoundingBox() const;    
+    BoundingBox getScreenSpaceBoundingBox(QMatrix4x4 matrix) const;
 protected:
     BoundingBox boundingBox;
     vector<VertexData> vertices;

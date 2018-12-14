@@ -18,6 +18,7 @@ Geometry::Geometry(QString objFilename) : Geometry()
     isFromObj = true;
     createGeometryFromObj(objFilename);
     bind();
+    calcBoundingBox();
 }
 
 Geometry::~Geometry() {
@@ -27,27 +28,8 @@ Geometry::~Geometry() {
 
 void Geometry::calcBoundingBox()
 {
-    boundingBox.min = vertices[0].position;
-    boundingBox.max = vertices[0].position;
     for (auto const& p : vertices) {
-        if (p.position.x() < boundingBox.min.x()) {
-            boundingBox.min.setX(p.position.x());
-        }
-        if (p.position.y() < boundingBox.min.y()) {
-            boundingBox.min.setY(p.position.y());
-        }
-        if (p.position.z() < boundingBox.min.z()) {
-            boundingBox.min.setZ(p.position.z());
-        }
-        if (p.position.x() > boundingBox.max.x()) {
-            boundingBox.max.setX(p.position.x());
-        }
-        if (p.position.y() > boundingBox.max.y()) {
-            boundingBox.max.setY(p.position.y());
-        }
-        if (p.position.z() > boundingBox.max.z()) {
-            boundingBox.max.setZ(p.position.z());
-        }
+        boundingBox.expand(p.position);
     }
 }
 
@@ -78,6 +60,20 @@ void Geometry::draw(QOpenGLShaderProgram *program)
 
     GLenum type = isFromObj ? GL_TRIANGLES : GL_TRIANGLE_STRIP;
     glDrawElements(type, indices.size(), GL_UNSIGNED_INT, 0);
+}
+
+BoundingBox Geometry::getBoundingBox() const
+{
+    return boundingBox;
+}
+
+BoundingBox Geometry::getScreenSpaceBoundingBox(QMatrix4x4 matrix) const
+{
+    BoundingBox b;
+    for (auto const& p : vertices) {
+        b.expand(matrix * p.position);
+    }
+    return b;
 }
 
 void Geometry::bind() {

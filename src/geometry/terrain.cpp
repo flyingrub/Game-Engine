@@ -5,6 +5,7 @@ using namespace std;
 Terrain::Terrain(): width(10), height(10){
     createGeometry();
     bind();
+    calcBoundingBox();
 }
 
 Terrain::Terrain(int width, int height): width(width), height(height){

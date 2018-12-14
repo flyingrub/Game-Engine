@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "mainwidget.h"
 
 Scene::Scene(){
 
@@ -67,9 +68,20 @@ void Scene::updateGlobalMatrix()
     }
 }
 
+bool Scene::inView() {
+    MainWidget* main = MainWidget::singleton;
+    QMatrix4x4 mvp =
+            main->getProjection() *
+            main->getCamera().getMatrix() *
+            globalMatrix;
+    BoundingBox b = geometry.value().get()->getScreenSpaceBoundingBox(mvp);
+    return b.inView();
+}
+
 void Scene::draw(QOpenGLShaderProgram* program)
 {
     if (geometry) {
+        qDebug() << inView();
         program->setUniformValue("model", globalMatrix);
         geometry.value().get()->draw(program);
     }

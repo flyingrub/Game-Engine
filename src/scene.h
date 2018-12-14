@@ -23,6 +23,7 @@ public:
     void translate(const QVector3D &vector);
     void draw(QOpenGLShaderProgram* program);
 
+    bool inView();
 private:
     QVector3D m_translation = {0,0,0};
     QVector3D m_rotation = {0,0,0};

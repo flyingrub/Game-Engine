@@ -57,6 +57,7 @@
 #include "geometry/terrain.h"
 
 float MainWidget::rotation_speed = 0.05;
+MainWidget* MainWidget::singleton;
 
 struct Light {
     QVector3D position;
@@ -93,6 +94,7 @@ MainWidget::MainWidget(QWidget *parent, int update_fps) :
     texture(0),
     update_fps(update_fps)
 {
+    singleton = this;
 }
 
 MainWidget::~MainWidget()
@@ -192,6 +194,7 @@ void MainWidget::initializeGL()
     timer.start(1000.0 / update_fps, this);
 }
 
+
 void MainWidget::initShaders()
 {
     // Compile vertex shader
@@ -249,9 +252,17 @@ void MainWidget::initTextures()
     // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
     texture->setWrapMode(QOpenGLTexture::Repeat);
 }
-//! [4]
 
-//! [5]
+Camera MainWidget::getCamera() const
+{
+    return camera;
+}
+
+QMatrix4x4 MainWidget::getProjection() const
+{
+    return projection;
+}
+
 void MainWidget::resizeGL(int w, int h)
 {
     // Calculate aspect ratio
@@ -265,7 +276,6 @@ void MainWidget::resizeGL(int w, int h)
     // Set perspective projection
     projection.perspective(fov, aspect, zNear, zFar);
 }
-//! [5]
 
 void MainWidget::paintGL()
 {
@@ -286,7 +296,8 @@ void MainWidget::paintGL()
     normalColorProgram.setUniformValue("view", camera.getMatrix());
     normalColorProgram.setUniformValue("projection", projection);
 
-    scene.draw(&colorLightProgram);
+    qDebug() << "Render";
+    //scene.draw(&colorLightProgram);
     frameNormal.release();
 
 
