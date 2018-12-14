@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 #ifndef QT_NO_OPENGL
     MainWidget widget_fast(nullptr, 100);
     widget_fast.show();
+    widget_fast.resize(1280, 720);
 #else
     QLabel note("OpenGL Support required");
     note.show();

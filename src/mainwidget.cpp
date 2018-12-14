@@ -112,6 +112,12 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         rotation_speed += 0.001;
     } else if (event->key() == Qt::Key_Down) {
         rotation_speed -= 0.001;
+    } else if (event->key() == Qt::Key_P) {
+        if (isFullScreen()) {
+            showNormal();
+        } else {
+            showFullScreen();
+        }
     }
     camera.handleInput(event);
     update();
