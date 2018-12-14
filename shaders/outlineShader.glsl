@@ -10,17 +10,17 @@ uniform vec2 u_resolution;
 uniform sampler2D texture;
 
 vec2 offsets[8] = vec2[8](
-    vec2(-1, -1),
     vec2(-1, 0),
-    vec2(-1, 1),
+    vec2(1, 0),
     vec2(0, -1),
     vec2(0, 1),
+    vec2(-1, -1),
+    vec2(-1, 1),
     vec2(1, -1),
-    vec2(1, 0),
     vec2(1, 1)
 );
 
-vec2 offsets2[9] = vec2[9](
+vec2 offset_blur[9] = vec2[9](
     vec2(-1.0f,  1.0f), // top-left
     vec2( 0.0f,    1.0f), // top-center
     vec2( 1.0f,  1.0f), // top-right
@@ -38,7 +38,7 @@ float kernel[9] = float[](
     1.0 / 16, 2.0 / 16, 1.0 / 16
 );
 
-vec4 edgeColor = vec4(0.3,0.2,0.4,1);
+vec4 edgeColor = vec4(1,0,0,1);
 float threshold = 0.1;
 
 void main()

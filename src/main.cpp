@@ -67,14 +67,8 @@ int main(int argc, char *argv[])
     app.setApplicationName("Lux");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-//    MainWidget widget_slow(nullptr, 1);
-//    widget_slow.show();
-//    MainWidget widget_normal(nullptr, 10);
-//    widget_normal.show();
     MainWidget widget_fast(nullptr, 100);
     widget_fast.show();
-//    MainWidget widget_faster(nullptr, 1000);
-//    widget_faster.show();
 #else
     QLabel note("OpenGL Support required");
     note.show();

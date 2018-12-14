@@ -307,7 +307,7 @@ void MainWidget::paintGL()
     Lights lights(2);
     lights.lights[0] = {
         {0,0,6},
-        {1,0.5,0.5},
+        {1,0,0.5},
         1,0.045f,0.0075f
     };
     lights.lights[1] = {
@@ -319,26 +319,26 @@ void MainWidget::paintGL()
     scene.draw(&colorLightProgram);
 
     // Outline Detection
-    glDisable(GL_DEPTH_TEST);
-    outlineProgram.bind();
-    glBindTexture(GL_TEXTURE_2D, frameNormal.texture());
-    outlineProgram.setUniformValue("texture", 0);
-    outlineProgram.setUniformValue("u_resolution", size());
+//    glDisable(GL_DEPTH_TEST);
+//    outlineProgram.bind();
+//    glBindTexture(GL_TEXTURE_2D, frameNormal.texture());
+//    outlineProgram.setUniformValue("texture", 0);
+//    outlineProgram.setUniformValue("u_resolution", size());
 
-    QOpenGLBuffer quadVerticesBuff;
-    quadVerticesBuff.create();
-    quadVerticesBuff.bind();
-    quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
+//    QOpenGLBuffer quadVerticesBuff;
+//    quadVerticesBuff.create();
+//    quadVerticesBuff.bind();
+//    quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
 
-    int vertexLocation = outlineProgram.attributeLocation("a_position");
-    outlineProgram.enableAttributeArray(vertexLocation);
-    outlineProgram.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
+//    int vertexLocation = outlineProgram.attributeLocation("a_position");
+//    outlineProgram.enableAttributeArray(vertexLocation);
+//    outlineProgram.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
 
-    int texcoordLocation = outlineProgram.attributeLocation("a_texcoord");
-    outlineProgram.enableAttributeArray(texcoordLocation);
-    outlineProgram.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
-//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    int texcoordLocation = outlineProgram.attributeLocation("a_texcoord");
+//    outlineProgram.enableAttributeArray(texcoordLocation);
+//    outlineProgram.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
+////    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    quadVerticesBuff.destroy();
+//    quadVerticesBuff.destroy();
 }

@@ -41,8 +41,10 @@ void Camera::handleInput(QKeyEvent *event)
         QVector3D right = QVector3D::crossProduct(front,up).normalized();
         position -= cameraSpeed * right;
     } else if (event->key() == Qt::Key_Z) {
-        position += cameraSpeed * front;
+        QVector3D f (front.x(), front.y(), 0);
+        position += cameraSpeed * f;
     } else if (event->key() == Qt::Key_S) {
-        position -= cameraSpeed * front;
+        QVector3D f (front.x(), front.y(), 0);
+        position -= cameraSpeed * f;
     }
 }

@@ -84,5 +84,5 @@ void main()
        light_color += calcPointLight(pointLights[i], n);
     }
 
-    gl_FragColor = light_color;
+    gl_FragColor = textureColor * light_color;
 }
