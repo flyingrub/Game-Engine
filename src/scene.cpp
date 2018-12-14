@@ -80,8 +80,8 @@ bool Scene::inView() {
 
 void Scene::draw(QOpenGLShaderProgram* program)
 {
-    if (geometry) {
-        qDebug() << inView();
+    if (geometry && inView()) {
+//        qDebug() << "draw";
         program->setUniformValue("model", globalMatrix);
         geometry.value().get()->draw(program);
     }
