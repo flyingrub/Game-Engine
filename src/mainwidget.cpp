@@ -147,12 +147,14 @@ void MainWidget::timerEvent(QTimerEvent *event)
     QTime new_time = QTime::currentTime();
     float timeElapsed = last_time.msecsTo(new_time);
     last_time = new_time;
+    setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle = rotation_speed * timeElapsed / 10.0;
 //    cubeScene->rotate(rotation_angle, {0,0,1});
     cubeScene->rotate({0,0,rotation_angle*0.5f});
     update();
+
 }
 
 void MainWidget::initializeGL()
@@ -203,6 +205,7 @@ void MainWidget::initializeGL()
 
 void MainWidget::initShaders()
 {
+    // LIGHT SHADER
     // Compile vertex shader
     if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
@@ -215,6 +218,7 @@ void MainWidget::initShaders()
     if (!colorLightProgram.link())
         close();
 
+    // NORMAL SHADER
     // Compile vertex shader
     if (!normalColorProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
@@ -227,6 +231,7 @@ void MainWidget::initShaders()
     if (!normalColorProgram.link())
         close();
 
+    // OUTLINE SHADER
     // Compile vertex shader
     if (!outlineProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
         close();
@@ -238,6 +243,20 @@ void MainWidget::initShaders()
     // Link shader pipeline
     if (!outlineProgram.link())
         close();
+
+    // HDR SHADER (Tonemapping)
+    // Compile vertex shader
+    if (!hdrToneMappingProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
+        close();
+
+    // Compile fragment shader
+    if (!hdrToneMappingProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/hdr.glsl"))
+        close();
+
+    // Link shader pipeline
+    if (!hdrToneMappingProgram.link())
+        close();
+
 
 }
 //! [3]
@@ -289,26 +308,28 @@ void MainWidget::paintGL()
 
     glEnable(GL_MULTISAMPLE);
     QOpenGLFramebufferObjectFormat format;
+//    format.setSamples(8);
+    format.setInternalTextureFormat(GL_RGBA16F);
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
     // Normal Rendering
-    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
-    glEnable(GL_MULTISAMPLE);
-    frameNormal.bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
+//    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
+//    frameNormal.bind();
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glEnable(GL_DEPTH_TEST);
 
-    normalColorProgram.bind();
-    normalColorProgram.setUniformValue("view", camera.getMatrix());
-    normalColorProgram.setUniformValue("projection", projection);
+//    normalColorProgram.bind();
+//    normalColorProgram.setUniformValue("view", camera.getMatrix());
+//    normalColorProgram.setUniformValue("projection", projection);
 
-    qDebug() << "Render";
-    //scene.draw(&colorLightProgram);
-    frameNormal.release();
+//    scene.draw(&colorLightProgram);
+//    frameNormal.release();
 
 
     // Light Render
-//    glClearColor(1,1,1,1);
+    QOpenGLFramebufferObject frameLightHDR = QOpenGLFramebufferObject(size(), format);
+    frameLightHDR.bind();
+//    glEnable(GL_MULTISAMPLE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -319,12 +340,12 @@ void MainWidget::paintGL()
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.5,0.5,0.5});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.8,0.5,0.7});
 
     Lights lights(2);
     lights.lights[0] = {
         {0,0,6},
-        {1,0,0.5},
+        {0.4,0,0.2},
         1,0.045f,0.0075f
     };
     lights.lights[1] = {
@@ -334,28 +355,34 @@ void MainWidget::paintGL()
     };
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
+    frameLightHDR.release();
 
-    // Outline Detection
-//    glDisable(GL_DEPTH_TEST);
-//    outlineProgram.bind();
-//    glBindTexture(GL_TEXTURE_2D, frameNormal.texture());
-//    outlineProgram.setUniformValue("texture", 0);
-//    outlineProgram.setUniformValue("u_resolution", size());
+    hdrToneMappingProgram.setUniformValue("exposure", 1);
+    renderQuad(&hdrToneMappingProgram, &frameLightHDR);
+}
 
-//    QOpenGLBuffer quadVerticesBuff;
-//    quadVerticesBuff.create();
-//    quadVerticesBuff.bind();
-//    quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
+void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObject* framebuffer) {
+    glDisable(GL_DEPTH_TEST);
+    program->bind();
+    framebuffer->bind();
+    glBindTexture(GL_TEXTURE_2D, framebuffer->texture());
+    program->setUniformValue("texture", 0);
+    program->setUniformValue("u_resolution", size());
 
-//    int vertexLocation = outlineProgram.attributeLocation("a_position");
-//    outlineProgram.enableAttributeArray(vertexLocation);
-//    outlineProgram.setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
+    QOpenGLBuffer quadVerticesBuff;
+    quadVerticesBuff.create();
+    quadVerticesBuff.bind();
+    quadVerticesBuff.allocate(quadVertices, sizeof(quadVertices));
 
-//    int texcoordLocation = outlineProgram.attributeLocation("a_texcoord");
-//    outlineProgram.enableAttributeArray(texcoordLocation);
-//    outlineProgram.setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
-////    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
+    int vertexLocation = program->attributeLocation("a_position");
+    program->enableAttributeArray(vertexLocation);
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 2, 4*sizeof(float));
 
-//    quadVerticesBuff.destroy();
+    int texcoordLocation = program->attributeLocation("a_texcoord");
+    program->enableAttributeArray(texcoordLocation);
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
+//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    quadVerticesBuff.destroy();
 }

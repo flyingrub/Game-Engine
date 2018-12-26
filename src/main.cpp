@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("Lux");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-    MainWidget widget_fast(nullptr, 100);
+    MainWidget widget_fast(nullptr, 60);
     widget_fast.show();
     widget_fast.resize(1280, 720);
 #else

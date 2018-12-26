@@ -91,15 +91,15 @@ protected:
     void initShaders();
     void initTextures();
 
-    void calcFPS();
-    void renderText(double x, double y, double z, const QString &str, const QFont & font = QFont());
-
+    void calcFPS();    
+    void renderText(double x, double y, const QString &str, const QFont &font = QFont(), const QColor &color = QColor(1,1,1));
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram colorLightProgram;
     QOpenGLShaderProgram outlineProgram;
     QOpenGLShaderProgram normalColorProgram;
     QOpenGLShaderProgram finalProgram;
+    QOpenGLShaderProgram hdrToneMappingProgram;
     QOpenGLTexture *texture;
     QMatrix4x4 projection;
 
@@ -127,7 +127,8 @@ private:
         -1.0f,  1.0f,  0.0f, 1.0f,
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
-    };
+                             };
+    void renderQuad(QOpenGLShaderProgram *program, QOpenGLFramebufferObject *framebuffer);
 };
 
 #endif // MAINWIDGET_H

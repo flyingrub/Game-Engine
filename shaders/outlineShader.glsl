@@ -44,14 +44,14 @@ float threshold = 0.1;
 void main()
 {
     vec4 neighboor = vec4(0);
-    for (int i =0; i<8; i++) {
+    for (int i =0; i<4; i++) {
         neighboor += texture2D(texture, texcoord + offsets[i] / u_resolution);
     }
-    neighboor/=8;
+    neighboor/=4;
     vec4 col = texture2D(texture, texcoord);
     // float s = step(threshold, length(col - neighboor));
     // gl_FragColor = mix(col, col, s);
-    if (length(col - neighboor) < threshold) discard;
+    //if (length(col - neighboor) < threshold) discard;
     gl_FragColor = edgeColor;
 }
 
