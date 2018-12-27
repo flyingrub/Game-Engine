@@ -67,6 +67,15 @@ struct Light {
     float constant;
     float linear;
     float quadratic;
+
+    void debug(QOpenGLShaderProgram *p) {
+        Scene scene;
+        scene.translate(position);
+        scene.updateGlobalMatrix();
+        scene.setGeometry(make_shared<Sphere>(0.2));
+        scene.draw(p);
+    }
+
 };
 
 struct Lights {
@@ -85,6 +94,11 @@ struct Lights {
             program->setUniformValue((base + "constant").c_str(), lights[i].constant);
             program->setUniformValue((base + "linear").c_str(), lights[i].linear);
             program->setUniformValue((base + "quadratic").c_str(), lights[i].quadratic);
+        }
+    }
+    void display(QOpenGLShaderProgram *p) {
+        for (size_t i = 0; i<size; i++) {
+            lights[i].debug(p);
         }
     }
 };
@@ -184,7 +198,7 @@ void MainWidget::initializeGL()
     terrainScene->setGeometry(terrain);
 
     Scene* sphereScene = new Scene();
-    shared_ptr<Geometry> sphere = make_shared<Sphere>();
+    shared_ptr<Geometry> sphere = make_shared<Sphere>(0.2, 10,10);
     sphereScene->setGeometry(sphere);
     sphereScene->translate({-1,1,1});
 
@@ -193,7 +207,7 @@ void MainWidget::initializeGL()
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
-    scene.addChild(sphereScene);
+    //scene.addChild(sphereScene);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
     cubeScene->addChild(stairScene);
@@ -344,7 +358,7 @@ void MainWidget::paintGL()
 
     Lights lights(2);
     lights.lights[0] = {
-        {1,1, 6},
+        {-2,-2,6},
         {50,0,0},
         1,0,0.1f
     };
@@ -353,14 +367,16 @@ void MainWidget::paintGL()
         {0,0,2},
         1,0.022f,0.0019
     };
+    lights.lights[0].debug(&colorLightProgram);
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
+    frameHDR.release();
 
     outlineProgram.bind();
     outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
     outlineProgram.setUniformValue("threshold", 0.1f);
     renderQuad(&outlineProgram, &frameNormal);
-    frameHDR.release();
 
     hdrToneMappingProgram.bind();
     hdrToneMappingProgram.setUniformValue("exposure", 1.0f);
@@ -388,6 +404,5 @@ void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObj
     int texcoordLocation = program->attributeLocation("a_texcoord");
     program->enableAttributeArray(texcoordLocation);
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
-//    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

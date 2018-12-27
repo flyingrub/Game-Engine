@@ -6,11 +6,11 @@
 class Sphere : public Geometry
 {
 public:
-    Sphere() : Sphere(1) {}
-    Sphere(int radius) : Sphere(radius, 20,20) {}
-    Sphere(int radius, int lat, int mer);
+    Sphere() : Sphere(1.0f) {}
+    Sphere(double radius) : Sphere(radius, 20,20) {}
+    Sphere(double radius, int lat, int mer);
 private:
-    int radius;
+    double radius;
     int lat;
     int mer;
     virtual void createGeometry();
