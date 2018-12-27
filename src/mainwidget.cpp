@@ -53,6 +53,7 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <QPainter>
+#include "geometry/sphere.h"
 #include "geometry/cube.h"
 #include "geometry/terrain.h"
 
@@ -182,19 +183,19 @@ void MainWidget::initializeGL()
     shared_ptr<Geometry> terrain = make_shared<Terrain>(100,100);
     terrainScene->setGeometry(terrain);
 
-    Scene* wallS = new Scene();
-    shared_ptr<Geometry> wall = make_shared<Geometry>("geometries/Cube.obj");
-    wallS->setGeometry(wall);
-    wallS->translate({2,2,2});
+    Scene* sphereScene = new Scene();
+    shared_ptr<Geometry> sphere = make_shared<Sphere>();
+    sphereScene->setGeometry(sphere);
+    sphereScene->translate({-1,1,1});
 
     Scene* stairScene = new Scene();
     shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Cube.obj");
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
+    scene.addChild(sphereScene);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
-    terrainScene->addChild(wallS);
     cubeScene->addChild(stairScene);
 
 
@@ -339,13 +340,13 @@ void MainWidget::paintGL()
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{1.03,1.03,1.03});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{1,1,1});
 
     Lights lights(2);
     lights.lights[0] = {
         {1,1, 6},
-        {500,0,0},
-        1,0.045f,0.0075f
+        {50,0,0},
+        1,0,0.1f
     };
     lights.lights[1] = {
         {6,50,6},

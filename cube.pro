@@ -14,7 +14,8 @@ SOURCES += \
     src/geometry/geometry.cpp \
     src/geometry/octreeterrain.cpp \
     src/camera.cpp \
-    src/postprocessing.cpp
+    src/postprocessing.cpp \
+    src/geometry/sphere.cpp
 
 HEADERS += \
     src/mainwidget.h \
@@ -24,7 +25,8 @@ HEADERS += \
     src/geometry/geometry.h \
     src/geometry/octreeterrain.h \
     src/camera.h \
-    src/postprocessing.h
+    src/postprocessing.h \
+    src/geometry/sphere.h
 
 RESOURCES += \
     shaders.qrc \
