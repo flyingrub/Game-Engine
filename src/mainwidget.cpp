@@ -339,22 +339,25 @@ void MainWidget::paintGL()
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.03,0.03,0.03});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{1.03,1.03,1.03});
 
     Lights lights(2);
     lights.lights[0] = {
         {1,1, 6},
-        {0.2,0,0},
+        {500,0,0},
         1,0.045f,0.0075f
     };
     lights.lights[1] = {
-        {6,6,6},
+        {6,50,6},
         {0,0,2},
         1,0.022f,0.0019
     };
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
 
+    outlineProgram.bind();
+    outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
+    outlineProgram.setUniformValue("threshold", 0.1f);
     renderQuad(&outlineProgram, &frameNormal);
     frameHDR.release();
 
