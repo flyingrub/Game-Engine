@@ -371,15 +371,15 @@ void MainWidget::paintGL()
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
-    frameHDR.release();
 
     outlineProgram.bind();
     outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
     outlineProgram.setUniformValue("threshold", 0.1f);
     renderQuad(&outlineProgram, &frameNormal);
+    frameHDR.release();
 
     hdrToneMappingProgram.bind();
-    hdrToneMappingProgram.setUniformValue("exposure", 1.0f);
+    hdrToneMappingProgram.setUniformValue("exposure", 1);
     renderQuad(&hdrToneMappingProgram, &frameHDR);
 
 
