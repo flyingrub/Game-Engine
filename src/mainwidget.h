@@ -128,7 +128,7 @@ private:
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
                              };
-    void renderQuad(QOpenGLShaderProgram *program, QOpenGLFramebufferObject *framebuffer);
+    void renderQuad(QOpenGLShaderProgram *program, QOpenGLFramebufferObject *input);
 };
 
 #endif // MAINWIDGET_H

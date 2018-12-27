@@ -51,7 +51,7 @@ void main()
     vec4 col = texture2D(texture, texcoord);
     // float s = step(threshold, length(col - neighboor));
     // gl_FragColor = mix(col, col, s);
-    //if (length(col - neighboor) < threshold) discard;
+    if (length(col - neighboor) < threshold) discard;
     gl_FragColor = edgeColor;
 }
 

@@ -2,14 +2,14 @@
 #include<vector>
 using namespace std;
 
-Terrain::Terrain(): width(10), height(10){
-    createGeometry();
-    bind();
-    calcBoundingBox();
+Terrain::Terrain(): Terrain(10,10) {
+
 }
 
 Terrain::Terrain(int width, int height): width(width), height(height){
-
+    createGeometry();
+    bind();
+    calcBoundingBox();
 }
 
 Terrain::Terrain(QString filename, int width, int height): width(width), height(height) {
@@ -33,6 +33,16 @@ void Terrain::createGeometry() {
             }
             float positionX = (float) i / (float) (width-1);
             float positionY = (float) j / (float) (height-1);
+            if (i%2 == 0) {
+                positionY = 1;
+            } else {
+                positionY = 0;
+            }
+            if (j%2 == 0) {
+                positionX = 1;
+            } else {
+                positionX = 0;
+            }
             vertices.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY)});
         }
     }

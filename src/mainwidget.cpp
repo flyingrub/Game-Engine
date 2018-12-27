@@ -179,7 +179,7 @@ void MainWidget::initializeGL()
     cubeScene->translate({-1,1,1});
 
     terrainScene = new Scene();
-    shared_ptr<Geometry> terrain = make_shared<Terrain>();
+    shared_ptr<Geometry> terrain = make_shared<Terrain>(100,100);
     terrainScene->setGeometry(terrain);
 
     Scene* wallS = new Scene();
@@ -293,7 +293,7 @@ void MainWidget::resizeGL(int w, int h)
     // Calculate aspect ratio
     qreal aspect = qreal(w) / qreal(h ? h : 1);
 
-    const qreal zNear = 0.1, zFar = 100.0, fov = 45.0;
+    const qreal zNear = 0.1, zFar = 1000.0, fov = 60.0;
 
     // Reset projection
     projection.setToIdentity();
@@ -313,23 +313,22 @@ void MainWidget::paintGL()
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
     // Normal Rendering
-//    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
-//    frameNormal.bind();
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glEnable(GL_DEPTH_TEST);
+    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
+    frameNormal.bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
-//    normalColorProgram.bind();
-//    normalColorProgram.setUniformValue("view", camera.getMatrix());
-//    normalColorProgram.setUniformValue("projection", projection);
+    normalColorProgram.bind();
+    normalColorProgram.setUniformValue("view", camera.getMatrix());
+    normalColorProgram.setUniformValue("projection", projection);
 
-//    scene.draw(&colorLightProgram);
-//    frameNormal.release();
+    scene.draw(&colorLightProgram);
+    frameNormal.release();
 
 
     // Light Render
-    QOpenGLFramebufferObject frameLightHDR = QOpenGLFramebufferObject(size(), format);
-    frameLightHDR.bind();
-//    glEnable(GL_MULTISAMPLE);
+    QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+    frameHDR.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -340,32 +339,36 @@ void MainWidget::paintGL()
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.8,0.5,0.7});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.03,0.03,0.03});
 
     Lights lights(2);
     lights.lights[0] = {
-        {0,0,6},
-        {0.4,0,0.2},
+        {1,1, 6},
+        {0.2,0,0},
         1,0.045f,0.0075f
     };
     lights.lights[1] = {
         {6,6,6},
-        {0,0,0.5},
+        {0,0,2},
         1,0.022f,0.0019
     };
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
-    frameLightHDR.release();
 
-    hdrToneMappingProgram.setUniformValue("exposure", 1);
-    renderQuad(&hdrToneMappingProgram, &frameLightHDR);
+    renderQuad(&outlineProgram, &frameNormal);
+    frameHDR.release();
+
+    hdrToneMappingProgram.bind();
+    hdrToneMappingProgram.setUniformValue("exposure", 1.0f);
+    renderQuad(&hdrToneMappingProgram, &frameHDR);
+
+
 }
 
-void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObject* framebuffer) {
+void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObject* input) {
     glDisable(GL_DEPTH_TEST);
     program->bind();
-    framebuffer->bind();
-    glBindTexture(GL_TEXTURE_2D, framebuffer->texture());
+    glBindTexture(GL_TEXTURE_2D, input->texture());
     program->setUniformValue("texture", 0);
     program->setUniformValue("u_resolution", size());
 
@@ -383,6 +386,4 @@ void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObj
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, 2*sizeof(float), 2, 4*sizeof(float));
 //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    quadVerticesBuff.destroy();
 }

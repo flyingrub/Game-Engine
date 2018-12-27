@@ -1,6 +1,5 @@
 #version 130
 in vec2 texcoord;
-uniform vec2 u_resolution;
 uniform sampler2D texture;
 uniform float exposure;
 
@@ -10,10 +9,10 @@ void main()
     vec3 hdrColor = texture2D(texture, texcoord).rgb;
 
 
-    vec3 mapped = vec3(1.0) - exp(-hdrColor * exposure);
-
+    // reinhard tone mapping
+    vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
+    // gamma correction
     mapped = pow(mapped, vec3(1.0 / gamma));
 
-    //gl_FragColor = vec4(mapped, 1.0);
-    gl_FragColor = vec4(1,0,0,1);
+    gl_FragColor = vec4(mapped, 1.0);
 }
