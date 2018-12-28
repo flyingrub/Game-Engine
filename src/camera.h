@@ -11,6 +11,8 @@ public:
     QMatrix4x4 getMatrix();
     void handleMouseMove(QMouseEvent* e, QVector2D center);
     void handleInput(QKeyEvent *event);
+    QVector3D getPosition() const;
+
 private:
     QVector3D position = {0,0,1};
     QVector3D front = {1,0,0};

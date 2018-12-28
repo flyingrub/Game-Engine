@@ -15,7 +15,7 @@ struct Light {
     float quadratic;
 };
 
-const int pointLightsNumber = 1;
+const int pointLightsNumber = 2;
 uniform Light pointLights[pointLightsNumber];
 uniform Light dirLight;
 uniform sampler2D texture;

@@ -116,8 +116,10 @@ private:
     static float rotation_speed;
     Scene* cubeScene;
     Scene* terrainScene;
-
     Scene scene;
+
+    bool vectorialMode = false;
+
     float quadVertices[24] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
@@ -129,6 +131,9 @@ private:
          1.0f,  1.0f,  1.0f, 1.0f
                              };
     void renderQuad(QOpenGLShaderProgram *program, QOpenGLFramebufferObject *input);
+    void renderVectorial(QOpenGLFramebufferObject *frameNormal);
+    void render();
+    void renderNormal();
 };
 
 #endif // MAINWIDGET_H

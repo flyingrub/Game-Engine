@@ -57,7 +57,7 @@
 #include "geometry/cube.h"
 #include "geometry/terrain.h"
 
-float MainWidget::rotation_speed = 0.05;
+float MainWidget::rotation_speed = 0.5;
 MainWidget* MainWidget::singleton;
 
 struct Light {
@@ -133,6 +133,8 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         } else {
             showFullScreen();
         }
+    } else if (event->key() == Qt::Key_F) {
+        vectorialMode = !vectorialMode;
     }
     camera.handleInput(event);
     update();
@@ -327,9 +329,25 @@ void MainWidget::paintGL()
     format.setInternalTextureFormat(GL_RGBA16F);
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    // Normal Rendering
-    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
-    frameNormal.bind();
+
+    if (vectorialMode) {
+        QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
+        frameNormal.bind();
+        renderNormal();
+        frameNormal.release();
+        renderVectorial(&frameNormal);
+    } else {
+        QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+        frameHDR.bind();
+        render();
+        frameHDR.release();
+        hdrToneMappingProgram.bind();
+        hdrToneMappingProgram.setUniformValue("exposure", 1);
+        renderQuad(&hdrToneMappingProgram, &frameHDR);
+    }
+}
+
+void MainWidget::renderNormal() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -338,12 +356,9 @@ void MainWidget::paintGL()
     normalColorProgram.setUniformValue("projection", projection);
 
     scene.draw(&colorLightProgram);
-    frameNormal.release();
+}
 
-
-    // Light Render
-    QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
-    frameHDR.bind();
+void MainWidget::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -354,35 +369,30 @@ void MainWidget::paintGL()
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{1,1,1});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.01,0.01,0.01});
 
     Lights lights(2);
     lights.lights[0] = {
-        {-2,-2,6},
-        {50,0,0},
+        camera.getPosition() + QVector3D(0,0,1),
+        {0,0,0},
         1,0,0.1f
     };
     lights.lights[1] = {
-        {6,50,6},
-        {0,0,2},
-        1,0.022f,0.0019
+        {-6,-6,6},
+        {0,0,0.5},
+        1,0,0.1f
     };
-    lights.lights[0].debug(&colorLightProgram);
+    lights.lights[1].debug(&colorLightProgram);
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
+}
 
+void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {
     outlineProgram.bind();
     outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
     outlineProgram.setUniformValue("threshold", 0.1f);
-    renderQuad(&outlineProgram, &frameNormal);
-    frameHDR.release();
-
-    hdrToneMappingProgram.bind();
-    hdrToneMappingProgram.setUniformValue("exposure", 1);
-    renderQuad(&hdrToneMappingProgram, &frameHDR);
-
-
+    renderQuad(&outlineProgram, frameNormal);
 }
 
 void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObject* input) {

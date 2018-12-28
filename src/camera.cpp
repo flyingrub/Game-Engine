@@ -48,3 +48,8 @@ void Camera::handleInput(QKeyEvent *event)
         position -= cameraSpeed * f;
     }
 }
+
+QVector3D Camera::getPosition() const
+{
+    return position;
+}
