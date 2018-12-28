@@ -70,6 +70,7 @@ struct Light {
 
     void debug(QOpenGLShaderProgram *p) {
         Scene scene;
+        p->setUniformValue("currentLightColor", color);
         scene.translate(position);
         scene.updateGlobalMatrix();
         scene.setGeometry(make_shared<Sphere>(0.2));
@@ -222,7 +223,19 @@ void MainWidget::initializeGL()
 
 void MainWidget::initShaders()
 {
-    // LIGHT SHADER
+    // Compile vertex shader
+    if (!lightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
+        close();
+
+    // Compile fragment shader
+    if (!lightProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/lamp.glsl"))
+        close();
+
+    // Link shader pipeline
+    if (!lightProgram.link())
+        close();
+
+    // SCENE RENDER SHADER
     // Compile vertex shader
     if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
@@ -353,16 +366,10 @@ void MainWidget::renderNormal() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    Light l = {
-            {6,6,6},
-            {0,0,0.5},
-            1,0,0.1f
-    };
     normalColorProgram.bind();
     normalColorProgram.setUniformValue("view", camera.getMatrix());
     normalColorProgram.setUniformValue("projection", projection);
 
-    l.debug(&normalColorProgram);
     scene.draw(&normalColorProgram);
 }
 
@@ -387,13 +394,18 @@ void MainWidget::render() {
     };
     lights.lights[1] = {
         {6,6,6},
-        {0,0,0.5},
+        {0,0,40},
         1,0,0.1f
     };
-    lights.lights[1].debug(&colorLightProgram);
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
+
+    lightProgram.bind();
+    lightProgram.setUniformValue("view", camera.getMatrix());
+    lightProgram.setUniformValue("projection", projection);
+    lights.lights[1].debug(&lightProgram);
+
 }
 
 void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {

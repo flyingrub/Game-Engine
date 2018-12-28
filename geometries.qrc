@@ -1,5 +1,6 @@
 <RCC>
     <qresource>
         <file>geometries/Stairs.obj</file>
+        <file>geometries/Cube.obj</file>
     </qresource>
 </RCC>

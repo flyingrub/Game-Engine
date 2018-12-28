@@ -96,6 +96,7 @@ protected:
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram colorLightProgram;
+    QOpenGLShaderProgram lightProgram;
     QOpenGLShaderProgram outlineProgram;
     QOpenGLShaderProgram normalColorProgram;
     QOpenGLShaderProgram finalProgram;

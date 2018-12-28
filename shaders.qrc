@@ -6,5 +6,6 @@
         <file>shaders/screen.glsl</file>
         <file>shaders/outlineShader.glsl</file>
         <file>shaders/hdr.glsl</file>
+        <file>shaders/lamp.glsl</file>
     </qresource>
 </RCC>
