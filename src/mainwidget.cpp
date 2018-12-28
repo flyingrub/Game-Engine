@@ -191,7 +191,7 @@ void MainWidget::initializeGL()
     glEnable(GL_CULL_FACE);
 
     cubeScene = new Scene();
-    shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
+    shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Stairs.obj");
     cubeScene->setGeometry(cube);
     cubeScene->translate({-1,1,1});
 
@@ -209,7 +209,7 @@ void MainWidget::initializeGL()
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
-    //scene.addChild(sphereScene);
+    scene.addChild(sphereScene);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
     cubeScene->addChild(stairScene);
@@ -330,6 +330,8 @@ void MainWidget::paintGL()
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
 
+    //renderNormal();
+    //return;
     if (vectorialMode) {
         QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
         frameNormal.bind();
@@ -351,11 +353,17 @@ void MainWidget::renderNormal() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
+    Light l = {
+            {6,6,6},
+            {0,0,0.5},
+            1,0,0.1f
+    };
     normalColorProgram.bind();
     normalColorProgram.setUniformValue("view", camera.getMatrix());
     normalColorProgram.setUniformValue("projection", projection);
 
-    scene.draw(&colorLightProgram);
+    l.debug(&normalColorProgram);
+    scene.draw(&normalColorProgram);
 }
 
 void MainWidget::render() {
@@ -378,7 +386,7 @@ void MainWidget::render() {
         1,0,0.1f
     };
     lights.lights[1] = {
-        {-6,-6,6},
+        {6,6,6},
         {0,0,0.5},
         1,0,0.1f
     };

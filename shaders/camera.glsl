@@ -30,7 +30,7 @@ void main()
     // Value will be automatically interpolated to fragments inside polygon faces
     v_texcoord = a_texcoord;
     v_normal = a_normal;
-    altitude = a_position.z / 2.0;
+    altitude = a_position.z;
 
     v_frag_pos = vec3(model * vec4(a_position));
 

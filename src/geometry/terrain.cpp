@@ -43,7 +43,7 @@ void Terrain::createGeometry() {
             } else {
                 positionX = 0;
             }
-            vertices.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY)});
+            vertices.push_back({QVector3D(x, y,  z), QVector2D(positionX,positionY), {0,0,1}});
         }
     }
 

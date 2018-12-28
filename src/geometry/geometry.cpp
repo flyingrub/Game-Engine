@@ -18,6 +18,7 @@ Geometry::Geometry(QString objFilename) : Geometry()
     isFromObj = true;
     createGeometryFromObj(objFilename);
     bind();
+    optimizeIndex();
     calcBoundingBox();
 }
 
