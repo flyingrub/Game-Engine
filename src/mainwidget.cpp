@@ -353,6 +353,7 @@ void MainWidget::paintGL()
         renderVectorial(&frameNormal);
     } else {
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+        frameHDR.addColorAttachment(size());
         frameHDR.bind();
         render();
         frameHDR.release();
@@ -376,6 +377,9 @@ void MainWidget::renderNormal() {
 void MainWidget::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
+    GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    f->glDrawBuffers(2, buffers);
 
     colorLightProgram.bind();
     texture->bind();

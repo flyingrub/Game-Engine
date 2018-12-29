@@ -7,5 +7,6 @@
         <file>shaders/outlineShader.glsl</file>
         <file>shaders/hdr.glsl</file>
         <file>shaders/lamp.glsl</file>
+        <file>shaders/bloom.glsl</file>
     </qresource>
 </RCC>

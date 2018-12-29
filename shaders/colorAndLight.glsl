@@ -1,4 +1,5 @@
 #version 130
+#extension GL_ARB_explicit_attrib_location : require
 
 #ifdef GL_ES
 // Set default precision to medium
@@ -20,16 +21,20 @@ uniform Light pointLights[pointLightsNumber];
 uniform Light dirLight;
 uniform sampler2D texture;
 uniform float time;
+uniform float brightThreshold;
 
 
 in vec2 v_texcoord;
 in vec3 v_normal;
 in vec3 v_frag_pos;
 
-out float altitude;
+in float altitude;
 
 float near = 1.0;
 float far  = 100.0;
+
+layout(location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 float LinearizeDepth(float depth)
 {
@@ -84,5 +89,10 @@ void main()
        light_color += calcPointLight(pointLights[i], n);
     }
 
-    gl_FragColor = textureColor * light_color;
+    FragColor = textureColor * light_color;
+    float brightness = dot(FragColor.rgb, vec3(brightThreshold));
+    if(brightness > 1.0)
+        BrightColor = vec4(FragColor.rgb, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
