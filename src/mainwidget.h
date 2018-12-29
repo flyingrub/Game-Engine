@@ -102,6 +102,7 @@ private:
     QOpenGLShaderProgram normalColorProgram;
     QOpenGLShaderProgram finalProgram;
     QOpenGLShaderProgram hdrToneMappingProgram;
+    QOpenGLShaderProgram bloomProgram;
     QOpenGLTexture *texture;
     QMatrix4x4 projection;
 
@@ -132,10 +133,11 @@ private:
          1.0f, -1.0f,  1.0f, 0.0f,
          1.0f,  1.0f,  1.0f, 1.0f
                              };
-    void renderQuad(QOpenGLShaderProgram *program, QOpenGLFramebufferObject *input);
     void renderVectorial(QOpenGLFramebufferObject *frameNormal);
     void render();
     void renderNormal();
+    void renderQuad(QOpenGLShaderProgram *program, GLuint texture);
+    GLuint bloom(GLuint texture);
 };
 
 #endif // MAINWIDGET_H

@@ -52,6 +52,7 @@
 
 #include <QMouseEvent>
 #include <cmath>
+#include <iostream>
 #include <QPainter>
 #include "geometry/sphere.h"
 #include "geometry/cube.h"
@@ -287,6 +288,19 @@ void MainWidget::initShaders()
     if (!hdrToneMappingProgram.link())
         close();
 
+    // HDR SHADER (Tonemapping)
+    // Compile vertex shader
+    if (!bloomProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
+        close();
+
+    // Compile fragment shader
+    if (!bloomProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/bloom.glsl"))
+        close();
+
+    // Link shader pipeline
+    if (!bloomProgram.link())
+        close();
+
 
 }
 //! [3]
@@ -335,8 +349,8 @@ void MainWidget::resizeGL(int w, int h)
 void MainWidget::paintGL()
 {
     scene.updateGlobalMatrix();
-
     glEnable(GL_MULTISAMPLE);
+
     QOpenGLFramebufferObjectFormat format;
 //    format.setSamples(8);
     format.setInternalTextureFormat(GL_RGBA16F);
@@ -357,10 +371,44 @@ void MainWidget::paintGL()
         frameHDR.bind();
         render();
         frameHDR.release();
+
+        cout << frameHDR.takeTexture(0) << endl;
+
+       GLuint bloomTexture = this->bloom(frameHDR.takeTexture(0));
+       QOpenGLFramebufferObject::bindDefault();
+       cout << frameHDR.takeTexture(0) << endl;
+
+
         hdrToneMappingProgram.bind();
         hdrToneMappingProgram.setUniformValue("exposure", 1);
-        renderQuad(&hdrToneMappingProgram, &frameHDR);
+        renderQuad(&hdrToneMappingProgram, frameHDR.takeTexture(0));
     }
+}
+
+GLuint MainWidget::bloom(GLuint texture) {
+    QOpenGLFramebufferObjectFormat format;
+    format.setInternalTextureFormat(GL_RGBA16F);
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    QOpenGLFramebufferObject pingPong[2] = {
+        QOpenGLFramebufferObject(size(), format),
+        QOpenGLFramebufferObject(size(), format)
+    };
+
+    bool horizontal = true, first_iteration = true;
+    int amount = 10;
+
+    GLuint current_texture = texture;
+
+    for (int i = 0; i < amount; i++) {
+        pingPong[horizontal].bind();
+        bloomProgram.bind();
+        bloomProgram.setUniformValue("horizontal", horizontal);
+        renderQuad(&bloomProgram, current_texture);
+        horizontal = !horizontal;
+        current_texture = pingPong[!horizontal].texture();
+    }
+    return current_texture;
 }
 
 void MainWidget::renderNormal() {
@@ -416,13 +464,13 @@ void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {
     outlineProgram.bind();
     outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
     outlineProgram.setUniformValue("threshold", 0.1f);
-    renderQuad(&outlineProgram, frameNormal);
+    renderQuad(&outlineProgram, frameNormal->texture());
 }
 
-void MainWidget::renderQuad(QOpenGLShaderProgram* program, QOpenGLFramebufferObject* input) {
+void MainWidget::renderQuad(QOpenGLShaderProgram* program, GLuint texture) {
     glDisable(GL_DEPTH_TEST);
     program->bind();
-    glBindTexture(GL_TEXTURE_2D, input->texture());
+    glBindTexture(GL_TEXTURE_2D, texture);
     program->setUniformValue("texture", 0);
     program->setUniformValue("u_resolution", size());
 
