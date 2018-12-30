@@ -7,7 +7,7 @@ uniform float exposure;
 void main()
 {
     const float gamma = 2.2;
-    vec3 hdrColor = texture2D(bloomTexture, texcoord).rgb;
+    vec3 hdrColor = texture2D(texture, texcoord).rgb;
 
 
     // reinhard tone mapping

@@ -430,11 +430,11 @@ void MainWidget::renderNormal() {
 }
 
 void MainWidget::render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
     QOpenGLExtraFunctions *f = QOpenGLContext::currentContext()->extraFunctions();
     GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     f->glDrawBuffers(2, buffers);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
 
     colorLightProgram.bind();
     texture->bind();
@@ -453,7 +453,7 @@ void MainWidget::render() {
     };
     lights.lights[1] = {
         {6,6,6},
-        {0,0,40},
+        {0,0,10},
         1,0,0.1f
     };
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
