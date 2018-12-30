@@ -364,7 +364,23 @@ void MainWidget::paintGL()
         frameNormal.bind();
         renderNormal();
         frameNormal.release();
+
+        QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
         renderVectorial(&frameNormal);
+        frameHDR.bind();
+        frameHDR.release();
+        GLuint textureBloom = this->bloom(frameHDR.texture());
+
+        hdrToneMappingProgram.bind();
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textureBloom);
+        hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
+        hdrToneMappingProgram.setUniformValue("exposure", 1);
+        renderQuad(&hdrToneMappingProgram, frameHDR.texture());
+
+
+        glDeleteTextures(1, &textureBloom);
+
     } else {
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
         frameHDR.addColorAttachment(size());
@@ -379,7 +395,7 @@ void MainWidget::paintGL()
         hdrToneMappingProgram.bind();
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textureBloom);
-        hdrToneMappingProgram.setUniformValue("bloomTexture", GL_TEXTURE1);
+        hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
         hdrToneMappingProgram.setUniformValue("exposure", 1);
         renderQuad(&hdrToneMappingProgram, textureHDR);
 
@@ -438,7 +454,7 @@ void MainWidget::render() {
 
     colorLightProgram.bind();
     texture->bind();
-    colorLightProgram.setUniformValue("texture", GL_TEXTURE0);
+    colorLightProgram.setUniformValue("texture", 0);
     colorLightProgram.setUniformValue("view", camera.getMatrix());
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
@@ -453,7 +469,7 @@ void MainWidget::render() {
     };
     lights.lights[1] = {
         {6,6,6},
-        {0,0,10},
+        {0,0,2},
         1,0,0.1f
     };
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
@@ -468,6 +484,7 @@ void MainWidget::render() {
 }
 
 void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {
+    glClear(GL_COLOR_BUFFER_BIT);
     outlineProgram.bind();
     outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
     outlineProgram.setUniformValue("threshold", 0.1f);
@@ -479,7 +496,7 @@ void MainWidget::renderQuad(QOpenGLShaderProgram* program, GLuint texture) {
     program->bind();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    program->setUniformValue("texture", GL_TEXTURE0);
+    program->setUniformValue("texture", 0);
     program->setUniformValue("u_resolution", size());
 
     QOpenGLBuffer quadVerticesBuff;

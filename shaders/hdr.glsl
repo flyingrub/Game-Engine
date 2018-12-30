@@ -8,6 +8,8 @@ void main()
 {
     const float gamma = 2.2;
     vec3 hdrColor = texture2D(texture, texcoord).rgb;
+    vec3 bloomColor = texture2D(bloomTexture, texcoord).rgb;
+    hdrColor += bloomColor; // additive blending
 
 
     // reinhard tone mapping
