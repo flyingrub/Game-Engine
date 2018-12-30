@@ -372,16 +372,23 @@ void MainWidget::paintGL()
         render();
         frameHDR.release();
 
-        cout << frameHDR.takeTexture(0) << endl;
-
-       GLuint bloomTexture = this->bloom(frameHDR.takeTexture(0));
-       QOpenGLFramebufferObject::bindDefault();
-       cout << frameHDR.takeTexture(0) << endl;
-
+        GLuint textureHDR = frameHDR.takeTexture(0);
+        GLuint textureBright = frameHDR.takeTexture(1);
+        GLuint textureBloom = this->bloom(textureBright);
 
         hdrToneMappingProgram.bind();
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textureBloom);
+        hdrToneMappingProgram.setUniformValue("bloomTexture", GL_TEXTURE1);
         hdrToneMappingProgram.setUniformValue("exposure", 1);
-        renderQuad(&hdrToneMappingProgram, frameHDR.takeTexture(0));
+        renderQuad(&hdrToneMappingProgram, textureHDR);
+
+        GLuint toRemove[3] = {
+            textureHDR,
+            textureBright,
+            textureBloom
+        };
+        glDeleteTextures(3, toRemove);
     }
 }
 
@@ -408,7 +415,7 @@ GLuint MainWidget::bloom(GLuint texture) {
         horizontal = !horizontal;
         current_texture = pingPong[!horizontal].texture();
     }
-    return current_texture;
+    return pingPong[horizontal].takeTexture(0);
 }
 
 void MainWidget::renderNormal() {
@@ -431,7 +438,7 @@ void MainWidget::render() {
 
     colorLightProgram.bind();
     texture->bind();
-    colorLightProgram.setUniformValue("texture", 0);
+    colorLightProgram.setUniformValue("texture", GL_TEXTURE0);
     colorLightProgram.setUniformValue("view", camera.getMatrix());
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
@@ -470,8 +477,9 @@ void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {
 void MainWidget::renderQuad(QOpenGLShaderProgram* program, GLuint texture) {
     glDisable(GL_DEPTH_TEST);
     program->bind();
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    program->setUniformValue("texture", 0);
+    program->setUniformValue("texture", GL_TEXTURE0);
     program->setUniformValue("u_resolution", size());
 
     QOpenGLBuffer quadVerticesBuff;

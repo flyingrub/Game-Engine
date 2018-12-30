@@ -1,12 +1,13 @@
 #version 130
 in vec2 texcoord;
 uniform sampler2D texture;
+uniform sampler2D bloomTexture;
 uniform float exposure;
 
 void main()
 {
     const float gamma = 2.2;
-    vec3 hdrColor = texture2D(texture, texcoord).rgb;
+    vec3 hdrColor = texture2D(bloomTexture, texcoord).rgb;
 
 
     // reinhard tone mapping
