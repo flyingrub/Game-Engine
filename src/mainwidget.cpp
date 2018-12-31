@@ -57,6 +57,7 @@
 #include "geometry/sphere.h"
 #include "geometry/cube.h"
 #include "geometry/terrain.h"
+#include "noise/SimplexNoise.h"
 
 float MainWidget::rotation_speed = 0.5;
 MainWidget* MainWidget::singleton;
@@ -74,7 +75,7 @@ struct Light {
         p->setUniformValue("currentLightColor", color);
         scene.translate(position);
         scene.updateGlobalMatrix();
-        scene.setGeometry(make_shared<Sphere>(0.2));
+        scene.setGeometry(make_shared<Sphere>(0.05));
         scene.draw(p);
     }
 
@@ -459,7 +460,7 @@ void MainWidget::render() {
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
     colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0.01,0.01,0.01});
+    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0,0,0});
 
     Lights lights(2);
     lights.lights[0] = {
@@ -467,9 +468,13 @@ void MainWidget::render() {
         {0,0,0},
         1,0,0.1f
     };
+    float n = SimplexNoise::noise((float) start_time.elapsed() / 1000.0f);
+    n = sin((float) start_time.elapsed() / 1000.0f);
+    float light =10;//  (n + 1.0f) * 10;
+    //cout << light << endl;
     lights.lights[1] = {
-        {6,6,6},
-        {0,0,2},
+        camera.getPosition(),
+        {light,0,light},
         1,0,0.1f
     };
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);

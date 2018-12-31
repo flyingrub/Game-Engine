@@ -15,7 +15,8 @@ SOURCES += \
     src/geometry/octreeterrain.cpp \
     src/camera.cpp \
     src/postprocessing.cpp \
-    src/geometry/sphere.cpp
+    src/geometry/sphere.cpp \
+    src/noise/SimplexNoise.cpp
 
 HEADERS += \
     src/mainwidget.h \
@@ -26,7 +27,9 @@ HEADERS += \
     src/geometry/octreeterrain.h \
     src/camera.h \
     src/postprocessing.h \
-    src/geometry/sphere.h
+    src/geometry/sphere.h \
+    src/noise/SimplexNoise.h
+
 
 RESOURCES += \
     shaders.qrc \
