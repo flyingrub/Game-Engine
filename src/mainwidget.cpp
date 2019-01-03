@@ -388,7 +388,7 @@ void MainWidget::paintGL()
         glDeleteTextures(1, &textureBloom);
 
     } else {
-        QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
+        //QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
         QOpenGLFramebufferObject frameBright = QOpenGLFramebufferObject(size(), format);
 
@@ -480,7 +480,7 @@ void MainWidget::render() {
     float light =10;//  (n + 1.0f) * 10;
     //cout << light << endl;
     lights.lights[1] = {
-        camera.getPosition(),
+        {10,10,3},
         {light,0,light},
         1,0,0.1f
     };

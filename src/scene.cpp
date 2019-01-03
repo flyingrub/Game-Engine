@@ -83,6 +83,7 @@ void Scene::draw(QOpenGLShaderProgram* program)
     if (geometry && inView()) {
 //        qDebug() << "draw";
         program->setUniformValue("model", globalMatrix);
+        program->setUniformValue("normal_matrix", globalMatrix.inverted().transposed());
         geometry.value().get()->draw(program);
     }
     for (auto const& c : children) {

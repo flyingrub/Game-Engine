@@ -8,6 +8,7 @@ precision mediump float;
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
+uniform mat4 normal_matrix;
 uniform vec3 light_pos;
 
 in vec4 a_position;
@@ -29,7 +30,7 @@ void main()
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces
     v_texcoord = a_texcoord;
-    v_normal = a_normal;
+    v_normal = mat3(normal_matrix) * a_normal;
     altitude = a_position.z;
 
     v_frag_pos = vec3(model * vec4(a_position));

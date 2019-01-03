@@ -79,10 +79,6 @@ void main()
     vec4 depthColor = vec4(vec3(depth), 1.0);
     vec4 altitudeColor = vec4(vec3(altitude), 1.0);
 
-    vec3 v_normal = map(v_normal, -1.0,1.0, 0.0,1.0);
-    vec4 normalColor = vec4(v_normal,1.0);
-    normalColor.b = d;
-
     vec3 n = normalize(v_normal);
     vec4 light_color = calcDirLight(dirLight, n);
     for(int i = 0; i < pointLightsNumber; i++) {
