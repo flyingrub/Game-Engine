@@ -137,7 +137,7 @@ private:
     void render();
     void renderNormal();
     void renderQuad(QOpenGLShaderProgram *program, GLuint texture);
-    GLuint bloom(GLuint texture);
+    GLuint bloom(GLuint texture, int amount = 10);
 };
 
 #endif // MAINWIDGET_H

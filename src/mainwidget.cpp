@@ -353,10 +353,13 @@ void MainWidget::paintGL()
     glEnable(GL_MULTISAMPLE);
 
     QOpenGLFramebufferObjectFormat format;
-//    format.setSamples(8);
     format.setInternalTextureFormat(GL_RGBA16F);
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
+    QOpenGLFramebufferObjectFormat multisamples;
+    multisamples.setInternalTextureFormat(GL_RGBA16F);
+    multisamples.setSamples(4);
+    multisamples.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
     //renderNormal();
     //return;
@@ -366,10 +369,12 @@ void MainWidget::paintGL()
         renderNormal();
         frameNormal.release();
 
+        QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+        frameHDRmultisamples.bind();
         renderVectorial(&frameNormal);
-        frameHDR.bind();
-        frameHDR.release();
+        frameHDRmultisamples.release();
+        QOpenGLFramebufferObject::blitFramebuffer(&frameHDR, &frameHDRmultisamples);
         GLuint textureBloom = this->bloom(frameHDR.texture());
 
         hdrToneMappingProgram.bind();
@@ -383,7 +388,10 @@ void MainWidget::paintGL()
         glDeleteTextures(1, &textureBloom);
 
     } else {
+        QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+        QOpenGLFramebufferObject frameBright = QOpenGLFramebufferObject(size(), format);
+
         frameHDR.addColorAttachment(size());
         frameHDR.bind();
         render();
@@ -391,6 +399,7 @@ void MainWidget::paintGL()
 
         GLuint textureHDR = frameHDR.takeTexture(0);
         GLuint textureBright = frameHDR.takeTexture(1);
+
         GLuint textureBloom = this->bloom(textureBright);
 
         hdrToneMappingProgram.bind();
@@ -409,7 +418,7 @@ void MainWidget::paintGL()
     }
 }
 
-GLuint MainWidget::bloom(GLuint texture) {
+GLuint MainWidget::bloom(GLuint texture, int amount) {
     QOpenGLFramebufferObjectFormat format;
     format.setInternalTextureFormat(GL_RGBA16F);
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
@@ -420,8 +429,6 @@ GLuint MainWidget::bloom(GLuint texture) {
     };
 
     bool horizontal = true, first_iteration = true;
-    int amount = 10;
-
     GLuint current_texture = texture;
 
     for (int i = 0; i < amount; i++) {
