@@ -10,15 +10,16 @@ precision mediump float;
 struct Light {
     vec3 position;
     vec3 color;
+    bool isDir;
 
     float constant;
     float linear;
     float quadratic;
+
 };
 
-const int pointLightsNumber = 2;
-uniform Light pointLights[pointLightsNumber];
-uniform Light dirLight;
+const int lightsNumber = 2;
+uniform Light lights[lightsNumber];
 uniform sampler2D texture;
 uniform float time;
 uniform float brightThreshold;
@@ -66,7 +67,8 @@ vec4 calcPointLight(Light light, vec3 normal)
     float distance    = length(light.position - v_frag_pos);
     float attenuation = 1.0 / (light.constant + light.linear * distance +
                         light.quadratic * (distance * distance));
-    vec3 diffuse = diff * light.color * attenuation;
+    vec3 ambient = light.color * attenuation *0.05;
+    vec3 diffuse = diff * light.color * attenuation + ambient;
     return vec4(diffuse, 1.0);
 }
 
@@ -80,9 +82,14 @@ void main()
     vec4 altitudeColor = vec4(vec3(altitude), 1.0);
 
     vec3 n = normalize(v_normal);
-    vec4 light_color = calcDirLight(dirLight, n);
-    for(int i = 0; i < pointLightsNumber; i++) {
-       light_color += calcPointLight(pointLights[i], n);
+    vec4 light_color = vec4(0);
+    for(int i = 0; i < lightsNumber; i++) {
+        Light l = lights[i];
+        if (l.isDir) {
+            light_color += calcDirLight(l, n);
+        } else {
+            light_color += calcPointLight(l, n);
+        }
     }
 
     FragColor = textureColor * light_color;

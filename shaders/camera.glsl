@@ -9,7 +9,6 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 uniform mat4 normal_matrix;
-uniform vec3 light_pos;
 
 in vec4 a_position;
 in vec2 a_texcoord;

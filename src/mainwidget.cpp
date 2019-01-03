@@ -65,6 +65,7 @@ MainWidget* MainWidget::singleton;
 struct Light {
     QVector3D position;
     QVector3D color;
+    bool isDir;
 
     float constant;
     float linear;
@@ -89,11 +90,12 @@ struct Lights {
         lights = new Light[size];
     }
     void toProgram(QOpenGLShaderProgram *program) {
-        string base= "pointLights[0].";
+        string base= "lights[0].";
         for (int i =0; i<size; i++) {
             base[base.size()-3] += (char)i;
             program->setUniformValue((base + "color").c_str(), lights[i].color);
             program->setUniformValue((base + "position").c_str(), lights[i].position);
+            program->setUniformValue((base + "isDir").c_str(), lights[i].isDir);
             program->setUniformValue((base + "constant").c_str(), lights[i].constant);
             program->setUniformValue((base + "linear").c_str(), lights[i].linear);
             program->setUniformValue((base + "quadratic").c_str(), lights[i].quadratic);
@@ -194,9 +196,15 @@ void MainWidget::initializeGL()
     glEnable(GL_CULL_FACE);
 
     cubeScene = new Scene();
-    shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Stairs.obj");
+    shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene->setGeometry(cube);
     cubeScene->translate({-1,1,1});
+
+    Scene* cubeScene2 = new Scene();
+    shared_ptr<Geometry> cube2 = make_shared<Geometry>("geometries/Cube.obj");
+    cubeScene2->setGeometry(cube2);
+    cubeScene2->translate({3,3,1});
+
 
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>(100,100);
@@ -208,11 +216,12 @@ void MainWidget::initializeGL()
     sphereScene->translate({-1,1,1});
 
     Scene* stairScene = new Scene();
-    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Cube.obj");
+    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
     scene.addChild(sphereScene);
+    scene.addChild(cubeScene2);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
     cubeScene->addChild(stairScene);
@@ -466,22 +475,22 @@ void MainWidget::render() {
     colorLightProgram.setUniformValue("view", camera.getMatrix());
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
-    colorLightProgram.setUniformValue("dirLight.position", QVector3D{-1,-1,-1});
-    colorLightProgram.setUniformValue("dirLight.color", QVector3D{0,0,0});
 
     Lights lights(2);
     lights.lights[0] = {
-        camera.getPosition() + QVector3D(0,0,1),
+        {1,1,1},
         {0,0,0},
+        true,
         1,0,0.1f
     };
     float n = SimplexNoise::noise((float) start_time.elapsed() / 1000.0f);
     n = sin((float) start_time.elapsed() / 1000.0f);
-    float light =10;//  (n + 1.0f) * 10;
+    float light =40;//  (n + 1.0f) * 10;
     //cout << light << endl;
     lights.lights[1] = {
         {10,10,3},
-        {light,0,light},
+        {light,light,light},
+        false,
         1,0,0.1f
     };
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
