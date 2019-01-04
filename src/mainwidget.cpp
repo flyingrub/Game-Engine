@@ -90,9 +90,9 @@ struct Lights {
         lights = new Light[size];
     }
     void toProgram(QOpenGLShaderProgram *program) {
-        string base= "lights[0].";
+        string base = "lights[0].";
         for (int i =0; i<size; i++) {
-            base[base.size()-3] += (char)i;
+            base[base.size()-3] = '0' + (char) i;
             program->setUniformValue((base + "color").c_str(), lights[i].color);
             program->setUniformValue((base + "position").c_str(), lights[i].position);
             program->setUniformValue((base + "isDir").c_str(), lights[i].isDir);
