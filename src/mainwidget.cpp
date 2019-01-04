@@ -476,20 +476,28 @@ void MainWidget::render() {
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
 
-    Lights lights(2);
+    Lights lights(4);
     lights.lights[0] = {
-        {1,1,1},
-        {0,0,0},
-        true,
+        {-10,-10,3},
+        {1,0,0},
+        false,
         1,0,0.1f
     };
-    float n = SimplexNoise::noise((float) start_time.elapsed() / 1000.0f);
-    n = sin((float) start_time.elapsed() / 1000.0f);
-    float light =40;//  (n + 1.0f) * 10;
-    //cout << light << endl;
     lights.lights[1] = {
         {10,10,3},
-        {light,light,light},
+        {0,1,0},
+        false,
+        1,0,0.1f
+    };
+    lights.lights[2] = {
+        {10,-10,3},
+        {0,0,1},
+        false,
+        1,0,0.1f
+    };
+    lights.lights[3] = {
+        {-10,10,3},
+        {1,0,1},
         false,
         1,0,0.1f
     };
@@ -500,7 +508,7 @@ void MainWidget::render() {
     lightProgram.bind();
     lightProgram.setUniformValue("view", camera.getMatrix());
     lightProgram.setUniformValue("projection", projection);
-    lights.lights[1].debug(&lightProgram);
+    lights.display(&lightProgram);
 
 }
 
