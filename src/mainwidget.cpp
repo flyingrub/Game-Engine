@@ -399,7 +399,6 @@ void MainWidget::paintGL()
     } else {
         //QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
         QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
-        QOpenGLFramebufferObject frameBright = QOpenGLFramebufferObject(size(), format);
 
         frameHDR.addColorAttachment(size());
         frameHDR.bind();
