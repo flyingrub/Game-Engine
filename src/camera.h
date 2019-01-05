@@ -11,15 +11,21 @@ public:
     QMatrix4x4 getMatrix();
     void handleMouseMove(QMouseEvent* e, QVector2D center);
     void handleInput(QKeyEvent *event);
+    void update(float time);
     QVector3D getPosition() const;
 
 private:
+    void updateVelocity();
+
     QVector3D position = {0,0,1};
     QVector3D front = {1,0,0};
     QVector3D up = {0,0,1};
     float yaw = 0;
     float pitch = 0;
-    float cameraSpeed = 0.2f;
+    float cameraSpeed = 0.5f;
+    QVector3D velocity = {0,0,0};
+
+    QSet<int> keysPressed;
 };
 
 #endif // CAMERA_H

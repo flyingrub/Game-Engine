@@ -145,6 +145,11 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
     update();
 }
 
+void MainWidget::keyReleaseEvent(QKeyEvent* event) {
+    camera.handleInput(event);
+}
+
+
 void MainWidget::mousePressEvent(QMouseEvent *e)
 {
 }
@@ -167,7 +172,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 void MainWidget::timerEvent(QTimerEvent *event)
 {
     QTime new_time = QTime::currentTime();
-    float timeElapsed = last_time.msecsTo(new_time);
+    timeElapsed = last_time.msecsTo(new_time);
     last_time = new_time;
     setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
 
@@ -207,7 +212,7 @@ void MainWidget::initializeGL()
 
 
     terrainScene = new Scene();
-    shared_ptr<Geometry> terrain = make_shared<Terrain>(100,100);
+    shared_ptr<Geometry> terrain = make_shared<Terrain>(300,300);
     terrainScene->setGeometry(terrain);
 
     Scene* sphereScene = new Scene();
@@ -358,9 +363,17 @@ void MainWidget::resizeGL(int w, int h)
 
 void MainWidget::paintGL()
 {
+    camera.update(timeElapsed);
     scene.updateGlobalMatrix();
     glEnable(GL_MULTISAMPLE);
 
+    if (vectorialMode) {
+        renderVectorialWithBloom();
+    } else {
+        renderColorWithBloom();
+    }
+}
+void MainWidget::renderVectorialWithBloom() {
     QOpenGLFramebufferObjectFormat format;
     format.setInternalTextureFormat(GL_RGBA16F);
     format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
@@ -370,60 +383,62 @@ void MainWidget::paintGL()
     multisamples.setSamples(4);
     multisamples.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-    //renderNormal();
-    //return;
-    if (vectorialMode) {
-        QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
-        frameNormal.bind();
-        renderNormal();
-        frameNormal.release();
+    QOpenGLFramebufferObject frameNormal = QOpenGLFramebufferObject(size(), format);
+    frameNormal.bind();
+    renderNormal();
+    frameNormal.release();
 
-        QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
-        QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
-        frameHDRmultisamples.bind();
-        renderVectorial(&frameNormal);
-        frameHDRmultisamples.release();
-        QOpenGLFramebufferObject::blitFramebuffer(&frameHDR, &frameHDRmultisamples);
-        GLuint textureBloom = this->bloom(frameHDR.texture());
+    QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
+    QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
+    frameHDRmultisamples.bind();
+    renderVectorial(&frameNormal);
+    frameHDRmultisamples.release();
+    QOpenGLFramebufferObject::blitFramebuffer(&frameHDR, &frameHDRmultisamples);
+    GLuint textureBloom = this->bloom(frameHDR.texture());
 
-        hdrToneMappingProgram.bind();
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textureBloom);
-        hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
-        hdrToneMappingProgram.setUniformValue("exposure", 1);
-        renderQuad(&hdrToneMappingProgram, frameHDR.texture());
+    hdrToneMappingProgram.bind();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureBloom);
+    hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
+    hdrToneMappingProgram.setUniformValue("exposure", 1);
+    renderQuad(&hdrToneMappingProgram, frameHDR.texture());
 
 
-        glDeleteTextures(1, &textureBloom);
+    glDeleteTextures(1, &textureBloom);
+}
 
-    } else {
-        //QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
-        QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
 
-        frameHDR.addColorAttachment(size());
-        frameHDR.bind();
-        render();
-        frameHDR.release();
+void MainWidget::renderColorWithBloom() {
+    QOpenGLFramebufferObjectFormat format;
+    format.setInternalTextureFormat(GL_RGBA16F);
+    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
 
-        GLuint textureHDR = frameHDR.takeTexture(0);
-        GLuint textureBright = frameHDR.takeTexture(1);
+    //QOpenGLFramebufferObject frameHDRmultisamples = QOpenGLFramebufferObject(size(), multisamples);
+    QOpenGLFramebufferObject frameHDR = QOpenGLFramebufferObject(size(), format);
 
-        GLuint textureBloom = this->bloom(textureBright);
+    frameHDR.addColorAttachment(size());
+    frameHDR.bind();
+    render();
+    frameHDR.release();
 
-        hdrToneMappingProgram.bind();
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textureBloom);
-        hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
-        hdrToneMappingProgram.setUniformValue("exposure", 1);
-        renderQuad(&hdrToneMappingProgram, textureHDR);
+    GLuint textureHDR = frameHDR.takeTexture(0);
+    GLuint textureBright = frameHDR.takeTexture(1);
 
-        GLuint toRemove[3] = {
-            textureHDR,
-            textureBright,
-            textureBloom
-        };
-        glDeleteTextures(3, toRemove);
-    }
+    GLuint textureBloom = this->bloom(textureBright);
+
+    hdrToneMappingProgram.bind();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureBloom);
+    hdrToneMappingProgram.setUniformValue("bloomTexture", 1);
+    hdrToneMappingProgram.setUniformValue("exposure", 1);
+    renderQuad(&hdrToneMappingProgram, textureHDR);
+
+    GLuint toRemove[3] = {
+        textureHDR,
+        textureBright,
+        textureBloom
+    };
+    glDeleteTextures(3, toRemove);
 }
 
 GLuint MainWidget::bloom(GLuint texture, int amount) {

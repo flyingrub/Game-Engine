@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "QDebug"
 #include "QtMath"
+#include <iostream>
 
 Camera::Camera()
 {
@@ -30,23 +31,46 @@ void Camera::handleMouseMove(QMouseEvent *event, QVector2D center)
 
 void Camera::handleInput(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_E) {
-        position -= cameraSpeed * up;
-    } else if (event->key() == Qt::Key_A) {
-        position += cameraSpeed * up;
-    } else if (event->key() == Qt::Key_D) {
-        QVector3D right = QVector3D::crossProduct(front,up).normalized();
-        position += cameraSpeed * right;
-    } else if (event->key() == Qt::Key_Q) {
-        QVector3D right = QVector3D::crossProduct(front,up).normalized();
-        position -= cameraSpeed * right;
-    } else if (event->key() == Qt::Key_Z) {
-        QVector3D f (front.x(), front.y(), 0);
-        position += cameraSpeed * f;
-    } else if (event->key() == Qt::Key_S) {
-        QVector3D f (front.x(), front.y(), 0);
-        position -= cameraSpeed * f;
+    if (event->type() == QEvent::Type::KeyPress) {
+        keysPressed.insert(event->key());
+    } else {
+        keysPressed.remove(event->key());
     }
+}
+
+void Camera::updateVelocity() {
+    if (keysPressed.contains(Qt::Key_E)) {
+        velocity -= cameraSpeed * up;
+    }
+    if (keysPressed.contains(Qt::Key_A)) {
+        velocity += cameraSpeed * up;
+    }
+    if (keysPressed.contains(Qt::Key_D)) {
+        QVector3D right = QVector3D::crossProduct(front,up).normalized();
+        velocity += cameraSpeed * right;
+    }
+    if (keysPressed.contains(Qt::Key_Q)) {
+        QVector3D right = QVector3D::crossProduct(front,up).normalized();
+        velocity -= cameraSpeed * right;
+    }
+    if (keysPressed.contains(Qt::Key_Z)) {
+        QVector3D f (front.x(), front.y(), 0);
+        velocity += cameraSpeed * f.normalized();
+    }
+    if (keysPressed.contains(Qt::Key_S)) {
+        QVector3D f (front.x(), front.y(), 0);
+        velocity -= cameraSpeed * f.normalized();
+    }
+}
+
+void Camera::update(float time)
+{
+    updateVelocity();
+    if (velocity.length() < 0.001) {
+        velocity = {0,0,0};
+    }
+    position += velocity * time / 1000;
+    velocity *= 0.90;
 }
 
 QVector3D Camera::getPosition() const

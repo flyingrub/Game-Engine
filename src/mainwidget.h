@@ -80,6 +80,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
@@ -113,6 +114,7 @@ private:
 
     QTime start_time = QTime::currentTime();
     QTime last_time = QTime::currentTime();
+    float timeElapsed = 0;
 
     int update_fps;
     float rotation_angle = 0;
@@ -138,6 +140,8 @@ private:
     void renderNormal();
     void renderQuad(QOpenGLShaderProgram *program, GLuint texture);
     GLuint bloom(GLuint texture, int amount = 10);
+    void renderColorWithBloom();
+    void renderVectorialWithBloom();
 };
 
 #endif // MAINWIDGET_H
