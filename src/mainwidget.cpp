@@ -142,7 +142,6 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         vectorialMode = !vectorialMode;
     }
     camera.handleInput(event);
-    update();
 }
 
 void MainWidget::keyReleaseEvent(QKeyEvent* event) {
