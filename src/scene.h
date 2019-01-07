@@ -24,6 +24,8 @@ public:
     void draw(QOpenGLShaderProgram* program);
 
     bool inView();
+    QMatrix4x4 getGlobalMatrix() const;
+
 private:
     QVector3D m_translation = {0,0,0};
     QVector3D m_rotation = {0,0,0};

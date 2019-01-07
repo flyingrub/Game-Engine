@@ -78,6 +78,11 @@ bool Scene::inView() {
     return b.inView();
 }
 
+QMatrix4x4 Scene::getGlobalMatrix() const
+{
+    return globalMatrix;
+}
+
 void Scene::draw(QOpenGLShaderProgram* program)
 {
     if (geometry && inView()) {

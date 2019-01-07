@@ -11,6 +11,7 @@ struct Light {
     vec3 position;
     vec3 color;
     bool isDir;
+    bool isActive;
 
     float constant;
     float linear;
@@ -85,6 +86,7 @@ void main()
     vec4 light_color = vec4(0);
     for(int i = 0; i < lightsNumber; i++) {
         Light l = lights[i];
+        if(!l.isActive) {continue;}
         if (l.isDir) {
             light_color += calcDirLight(l, n);
         } else {

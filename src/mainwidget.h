@@ -64,7 +64,7 @@
 #include <QOpenGLTexture>
 #include "scene.h"
 #include "camera.h"
-
+#include "light.h"
 class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -111,6 +111,8 @@ private:
     QVector3D rotationAxis;
     QQuaternion rotation;
     Camera camera;
+    Lights lights = Lights(4);
+
 
     QTime start_time = QTime::currentTime();
     QTime last_time = QTime::currentTime();

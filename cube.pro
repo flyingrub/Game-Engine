@@ -28,7 +28,8 @@ HEADERS += \
     src/camera.h \
     src/postprocessing.h \
     src/geometry/sphere.h \
-    src/noise/SimplexNoise.h
+    src/noise/SimplexNoise.h \
+    src/light.h
 
 
 RESOURCES += \

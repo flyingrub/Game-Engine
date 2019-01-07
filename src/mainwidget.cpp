@@ -62,53 +62,6 @@
 float MainWidget::rotation_speed = 0.5;
 MainWidget* MainWidget::singleton;
 
-struct Light {
-    QVector3D position;
-    QVector3D color;
-    bool isDir;
-
-    float constant;
-    float linear;
-    float quadratic;
-
-    void debug(QOpenGLShaderProgram *p) {
-        Scene scene;
-        p->setUniformValue("currentLightColor", color);
-        scene.translate(position);
-        scene.updateGlobalMatrix();
-        scene.setGeometry(make_shared<Sphere>(0.05));
-        scene.draw(p);
-    }
-
-};
-
-struct Lights {
-    Light* lights;
-    int size;
-    Lights(int size) {
-        this->size = size;
-        lights = new Light[size];
-    }
-    void toProgram(QOpenGLShaderProgram *program) {
-        string base = "lights[0].";
-        for (int i =0; i<size; i++) {
-            base[base.size()-3] = '0' + (char) i;
-            program->setUniformValue((base + "color").c_str(), lights[i].color);
-            program->setUniformValue((base + "position").c_str(), lights[i].position);
-            program->setUniformValue((base + "isDir").c_str(), lights[i].isDir);
-            program->setUniformValue((base + "constant").c_str(), lights[i].constant);
-            program->setUniformValue((base + "linear").c_str(), lights[i].linear);
-            program->setUniformValue((base + "quadratic").c_str(), lights[i].quadratic);
-        }
-    }
-    void display(QOpenGLShaderProgram *p) {
-        for (size_t i = 0; i<size; i++) {
-            lights[i].debug(p);
-        }
-    }
-};
-
-
 MainWidget::MainWidget(QWidget *parent, int update_fps) :
     QOpenGLWidget(parent),
     texture(0),
@@ -229,6 +182,12 @@ void MainWidget::initializeGL()
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
     cubeScene->addChild(stairScene);
+
+    lights.lights[0] = Light( {-10,-10,3},{1,0,0});
+    lights.lights[1] = Light({10,10,3}, {0,1,0});
+    lights.lights[2] = Light({10,-10,3},{0,0,1});
+    lights.lights[3] = Light({-10,10,3},{1,0,1});
+    lights.lights[0].follow(cubeScene);
 
 
     // Use QBasicTimer because its faster than QTimer
@@ -489,31 +448,6 @@ void MainWidget::render() {
     colorLightProgram.setUniformValue("projection", projection);
     colorLightProgram.setUniformValue("time", (float) start_time.elapsed() / 1000.0f);
 
-    Lights lights(4);
-    lights.lights[0] = {
-        {-10,-10,3},
-        {1,0,0},
-        false,
-        1,0,0.1f
-    };
-    lights.lights[1] = {
-        {10,10,3},
-        {0,1,0},
-        false,
-        1,0,0.1f
-    };
-    lights.lights[2] = {
-        {10,-10,3},
-        {0,0,1},
-        false,
-        1,0,0.1f
-    };
-    lights.lights[3] = {
-        {-10,10,3},
-        {1,0,1},
-        false,
-        1,0,0.1f
-    };
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
     lights.toProgram(&colorLightProgram);
     scene.draw(&colorLightProgram);
