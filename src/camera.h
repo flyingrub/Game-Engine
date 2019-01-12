@@ -3,6 +3,7 @@
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QMouseEvent>
+#include "geometry/boundingbox.h"
 
 class Camera
 {
@@ -13,6 +14,7 @@ public:
     void handleInput(QKeyEvent *event);
     void update(float time);
     QVector3D getPosition() const;
+    BoundingBox getBoundingBox();
 
 private:
     void updateVelocity();

@@ -77,3 +77,8 @@ QVector3D Camera::getPosition() const
 {
     return position;
 }
+
+BoundingBox Camera::getBoundingBox()
+{
+    return BoundingBox::fromPoint(position, {0.5,0.5,1});
+}

@@ -144,6 +144,7 @@ private:
     GLuint bloom(GLuint texture, int amount = 10);
     void renderColorWithBloom();
     void renderVectorialWithBloom();
+    void collideCheck();
 };
 
 #endif // MAINWIDGET_H

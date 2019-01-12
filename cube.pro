@@ -29,7 +29,8 @@ HEADERS += \
     src/postprocessing.h \
     src/geometry/sphere.h \
     src/noise/SimplexNoise.h \
-    src/light.h
+    src/light.h \
+    src/geometry/boundingbox.h
 
 
 RESOURCES += \

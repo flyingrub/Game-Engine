@@ -127,13 +127,19 @@ void MainWidget::timerEvent(QTimerEvent *event)
     timeElapsed = last_time.msecsTo(new_time);
     last_time = new_time;
     setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
+    collideCheck();
 
     if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
     rotation_angle = rotation_speed * timeElapsed / 10.0;
-//    cubeScene->rotate(rotation_angle, {0,0,1});
-    cubeScene->rotate({0,0,rotation_angle*0.5f});
+    //cubeScene->rotate({0,0,rotation_angle*0.5f});
     update();
+}
 
+void MainWidget::collideCheck() {
+    BoundingBox b = BoundingBox::fromPoint(lights.lights[0].position, 0.5);
+    if (b.collide(camera.getBoundingBox())) {
+        qDebug() << "collide" ;
+    }
 }
 
 void MainWidget::initializeGL()
@@ -154,8 +160,7 @@ void MainWidget::initializeGL()
 
     cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
-    cubeScene->setGeometry(cube);
-    cubeScene->translate({-1,1,1});
+    //cubeScene->setGeometry(cube);
 
     Scene* cubeScene2 = new Scene();
     shared_ptr<Geometry> cube2 = make_shared<Geometry>("geometries/Cube.obj");
@@ -177,18 +182,20 @@ void MainWidget::initializeGL()
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
-    scene.addChild(sphereScene);
-    scene.addChild(cubeScene2);
+    //scene.addChild(sphereScene);
+    //scene.addChild(cubeScene2);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
-    cubeScene->addChild(stairScene);
+    //cubeScene->addChild(stairScene);
 
     lights.lights[0] = Light( {-10,-10,3},{1,0,0});
     lights.lights[1] = Light({10,10,3}, {0,1,0});
     lights.lights[2] = Light({10,-10,3},{0,0,1});
     lights.lights[3] = Light({-10,10,3},{1,0,1});
     lights.lights[0].follow(cubeScene);
-
+    lights.lights[1].follow(cubeScene);
+    lights.lights[2].follow(cubeScene);
+    lights.lights[3].follow(cubeScene);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(1000.0 / update_fps, this);
