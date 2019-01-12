@@ -77,6 +77,7 @@ public:
     QMatrix4x4 getProjection() const;
 
     Camera getCamera() const;
+    Type currentType = None;
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;

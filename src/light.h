@@ -42,6 +42,10 @@ struct Light {
         p->setUniformValue((base + "quadratic").c_str(), quadratic);
     }
 
+    bool collide(BoundingBox b) {
+        return BoundingBox::fromPoint(position, 2).collide(b);
+    }
+
     void debug(QOpenGLShaderProgram *p) {
         if (!isActive || isDir) return;
         Scene scene;
@@ -57,10 +61,12 @@ struct Light {
 struct Lights {
     Light* lights;
     int size;
+
     Lights(int size) {
         this->size = size;
         lights = new Light[size];
     }
+
     void toProgram(QOpenGLShaderProgram *program) {
         string base = "lights[0].";
         for (int i =0; i<size; i++) {

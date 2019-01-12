@@ -8,6 +8,8 @@
 #include "geometry/geometry.h"
 #include <memory>
 
+enum Type {Red, Blue, Green, Pink, None};
+
 class Scene
 {
 public:
@@ -24,9 +26,13 @@ public:
     void draw(QOpenGLShaderProgram* program);
 
     bool inView();
+    bool shouldDraw();
     QMatrix4x4 getGlobalMatrix() const;
 
+    void setType(Type t);
+
 private:
+    Type type = Type::None;
     QVector3D m_translation = {0,0,0};
     QVector3D m_rotation = {0,0,0};
     QVector3D m_scale = {1,1,1};

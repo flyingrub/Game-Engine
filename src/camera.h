@@ -19,7 +19,7 @@ public:
 private:
     void updateVelocity();
 
-    QVector3D position = {0,0,1};
+    QVector3D position = {0,0,2};
     QVector3D front = {1,0,0};
     QVector3D up = {0,0,1};
     float yaw = 0;

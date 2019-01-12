@@ -78,14 +78,25 @@ bool Scene::inView() {
     return b.inView();
 }
 
+bool Scene::shouldDraw()
+{
+    bool isGoodType = type == None || MainWidget::singleton->currentType == type;
+    return geometry && inView() && isGoodType;
+}
+
 QMatrix4x4 Scene::getGlobalMatrix() const
 {
     return globalMatrix;
 }
 
+void Scene::setType(Type t)
+{
+    type = t;
+}
+
 void Scene::draw(QOpenGLShaderProgram* program)
 {
-    if (geometry && inView()) {
+    if (shouldDraw()) {
         program->setUniformValue("model", globalMatrix);
         program->setUniformValue("normal_matrix", globalMatrix.inverted().transposed());
         geometry.value().get()->draw(program);

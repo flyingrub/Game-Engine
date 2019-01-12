@@ -136,9 +136,12 @@ void MainWidget::timerEvent(QTimerEvent *event)
 }
 
 void MainWidget::collideCheck() {
-    BoundingBox b = BoundingBox::fromPoint(lights.lights[0].position, 0.5);
-    if (b.collide(camera.getBoundingBox())) {
-        qDebug() << "collide" ;
+    for (int i = 0; i<lights.size; i++) {
+        if (lights.lights[i].collide(camera.getBoundingBox())) {
+            qDebug() << i;
+            currentType = static_cast<Type>(i);
+            break;
+        }
     }
 }
 
@@ -160,29 +163,24 @@ void MainWidget::initializeGL()
 
     cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
-    //cubeScene->setGeometry(cube);
+    cubeScene->setGeometry(cube);
+    cubeScene->translate({0,0,1});
+    cubeScene->setType(Type::Red);
 
     Scene* cubeScene2 = new Scene();
     shared_ptr<Geometry> cube2 = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene2->setGeometry(cube2);
     cubeScene2->translate({3,3,1});
 
-
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>(300,300);
     terrainScene->setGeometry(terrain);
-
-    Scene* sphereScene = new Scene();
-    shared_ptr<Geometry> sphere = make_shared<Sphere>(0.2, 10,10);
-    sphereScene->setGeometry(sphere);
-    sphereScene->translate({-1,1,1});
 
     Scene* stairScene = new Scene();
     shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
     stairScene->setGeometry(stairs);
     stairScene->translate({1,1,1});
 
-    //scene.addChild(sphereScene);
     //scene.addChild(cubeScene2);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
