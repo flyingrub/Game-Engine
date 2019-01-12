@@ -19,7 +19,7 @@ struct Light {
 
 };
 
-const int lightsNumber = 4;
+const int lightsNumber = 5;
 uniform Light lights[lightsNumber];
 uniform sampler2D texture;
 uniform float time;

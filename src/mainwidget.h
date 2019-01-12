@@ -112,7 +112,7 @@ private:
     QVector3D rotationAxis;
     QQuaternion rotation;
     Camera camera;
-    Lights lights = Lights(4);
+    Lights lights = Lights(5);
 
 
     QTime start_time = QTime::currentTime();

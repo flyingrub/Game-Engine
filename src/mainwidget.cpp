@@ -81,18 +81,12 @@ MainWidget::~MainWidget()
 
 void MainWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (event->key() == Qt::Key_Up) {
-        rotation_speed += 0.001;
-    } else if (event->key() == Qt::Key_Down) {
-        rotation_speed -= 0.001;
-    } else if (event->key() == Qt::Key_P) {
+    if (event->key() == Qt::Key_P) {
         if (isFullScreen()) {
             showNormal();
         } else {
             showFullScreen();
         }
-    } else if (event->key() == Qt::Key_F) {
-        vectorialMode = !vectorialMode;
     }
     camera.handleInput(event);
 }
@@ -138,11 +132,14 @@ void MainWidget::timerEvent(QTimerEvent *event)
 void MainWidget::collideCheck() {
     for (int i = 0; i<lights.size; i++) {
         if (lights.lights[i].collide(camera.getBoundingBox())) {
-            qDebug() << i;
+            lights.lights[currentType].resetPower();
             currentType = static_cast<Type>(i);
-            break;
+            lights.lights[currentType].increasePower();
+            vectorialMode = false;
+            return;
         }
     }
+    vectorialMode = false;
 }
 
 void MainWidget::initializeGL()
@@ -161,32 +158,43 @@ void MainWidget::initializeGL()
     // Enable back face culling
     glEnable(GL_CULL_FACE);
 
-    cubeScene = new Scene();
+    Scene* cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene->setGeometry(cube);
     cubeScene->translate({0,0,1});
     cubeScene->setType(Type::Red);
 
+    Scene* cubeScene1 = new Scene();
+    cubeScene1->setGeometry(cube);
+    cubeScene1->translate({0,0,4});
+    cubeScene1->setType(Type::Pink);
+    cubeScene1->scale({5,2,3});
+
     Scene* cubeScene2 = new Scene();
-    shared_ptr<Geometry> cube2 = make_shared<Geometry>("geometries/Cube.obj");
-    cubeScene2->setGeometry(cube2);
-    cubeScene2->translate({3,3,1});
+    cubeScene2->setGeometry(cube);
+    cubeScene2->translate({0,0,5});
+    cubeScene2->setType(Type::Blue);
+    cubeScene2->scale({3,3,4});
+
+    Scene* cubeScene3 = new Scene();
+    cubeScene3->setGeometry(cube);
+    cubeScene3->translate({0,0,2});
+    cubeScene3->setType(Type::Green);
+    cubeScene3->scale({2,2,1});
 
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>(300,300);
     terrainScene->setGeometry(terrain);
 
-    Scene* stairScene = new Scene();
-    shared_ptr<Geometry> stairs = make_shared<Geometry>("geometries/Stairs.obj");
-    stairScene->setGeometry(stairs);
-    stairScene->translate({1,1,1});
-
-    //scene.addChild(cubeScene2);
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
-    //cubeScene->addChild(stairScene);
+    terrainScene->addChild(cubeScene1);
+    terrainScene->addChild(cubeScene2);
+    terrainScene->addChild(cubeScene3);
 
-    lights.lights[0] = Light( {-10,-10,3},{1,0,0});
+
+
+    lights.lights[0] = Light({-10,-10,3},{1,0,0});
     lights.lights[1] = Light({10,10,3}, {0,1,0});
     lights.lights[2] = Light({10,-10,3},{0,0,1});
     lights.lights[3] = Light({-10,10,3},{1,0,1});
@@ -329,13 +337,13 @@ void MainWidget::paintGL()
     camera.update(timeElapsed);
     scene.updateGlobalMatrix();
     glEnable(GL_MULTISAMPLE);
-
     if (vectorialMode) {
         renderVectorialWithBloom();
     } else {
         renderColorWithBloom();
     }
 }
+
 void MainWidget::renderVectorialWithBloom() {
     QOpenGLFramebufferObjectFormat format;
     format.setInternalTextureFormat(GL_RGBA16F);
@@ -467,9 +475,15 @@ void MainWidget::render() {
 void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {
     glClear(GL_COLOR_BUFFER_BIT);
     outlineProgram.bind();
-    outlineProgram.setUniformValue("edgeColor", QVector3D(1,0,0));
+    QVector3D currentColor = lights.lights[static_cast<int>(currentType)].color;
+    outlineProgram.setUniformValue("edgeColor", currentColor);
     outlineProgram.setUniformValue("threshold", 0.1f);
     renderQuad(&outlineProgram, frameNormal->texture());
+
+    lightProgram.bind();
+    lightProgram.setUniformValue("view", camera.getMatrix());
+    lightProgram.setUniformValue("projection", projection);
+    lights.display(&lightProgram);
 }
 
 void MainWidget::renderQuad(QOpenGLShaderProgram* program, GLuint texture) {

@@ -17,6 +17,8 @@ struct Light {
     float constant = 1;
     float linear = 0;
     float quadratic = 0.1f;
+    float power = 0.5;
+
 
     Light(){}
 
@@ -33,7 +35,7 @@ struct Light {
         } else {
             matrix = QMatrix4x4();
         }
-        p->setUniformValue((base + "color").c_str(), color);
+        p->setUniformValue((base + "color").c_str(), color * power);
         p->setUniformValue((base + "position").c_str(), matrix * position);
         p->setUniformValue((base + "isDir").c_str(), isDir);
         p->setUniformValue((base + "isActive").c_str(), isActive);
@@ -44,6 +46,18 @@ struct Light {
 
     bool collide(BoundingBox b) {
         return BoundingBox::fromPoint(position, 2).collide(b);
+    }
+
+    void increasePower() {
+        linear = 0.09;
+        quadratic = 0.032;
+        power = 1;
+    }
+
+    void resetPower() {
+        linear = 0;
+        quadratic = 0.1f;
+        power = 0.5;
     }
 
     void debug(QOpenGLShaderProgram *p) {
