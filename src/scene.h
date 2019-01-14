@@ -38,6 +38,7 @@ public:
     bool getShouldCollide() const;
     void setShouldCollide(bool value);
 
+    bool correctType();
 private:
     Type type = Type::None;
     QVector3D m_translation = {0,0,0};

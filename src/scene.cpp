@@ -87,10 +87,13 @@ bool Scene::inView() {
     return b.inView();
 }
 
+bool Scene::correctType() {
+    return type == None || MainWidget::singleton->currentType == type;
+}
+
 bool Scene::shouldDraw()
 {
-    bool isGoodType = type == None || MainWidget::singleton->currentType == type;
-    return geometry && inView() && isGoodType;
+    return geometry && inView() && correctType();
 }
 
 QMatrix4x4 Scene::getGlobalMatrix() const
@@ -104,7 +107,10 @@ BoundingBox Scene::getGeometryBoundingBox() const
 }
 
 bool Scene::collide(Camera camera) {
-    if (shouldCollide && geometry && getGeometryBoundingBox().collide(camera.getBoundingBox())) {
+    if (shouldCollide
+            && correctType()
+            && geometry
+            && getGeometryBoundingBox().collide(camera.getBoundingBox())) {
         return true;
     }
     bool collide = false;
