@@ -68,7 +68,7 @@ BoundingBox Geometry::getBoundingBox() const
     return boundingBox;
 }
 
-BoundingBox Geometry::getScreenSpaceBoundingBox(QMatrix4x4 matrix) const
+BoundingBox Geometry::getBoundingBox(QMatrix4x4 matrix) const
 {
     BoundingBox b;
     for (auto const& p : vertices) {

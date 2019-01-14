@@ -2,6 +2,7 @@
 #include "QDebug"
 #include "QtMath"
 #include <iostream>
+#include "mainwidget.h"
 
 Camera::Camera()
 {
@@ -74,7 +75,14 @@ void Camera::update(float time)
     if (velocity.length() < 0.001) {
         velocity = {0,0,0};
     }
+    QVector3D old_position = position;
     position += velocity * time / 1000;
+    if (MainWidget::singleton->cameraCollide()) {
+        position = old_position;
+        velocity = {0,0,0};
+    }
+
+    if (MainWidget::singleton)
     velocity *= 0.90;
 }
 

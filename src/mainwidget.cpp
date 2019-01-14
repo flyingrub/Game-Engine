@@ -80,30 +80,6 @@ MainWidget::~MainWidget()
     doneCurrent();
 }
 
-void MainWidget::keyPressEvent(QKeyEvent* event)
-{
-    if (event->key() == Qt::Key_P) {
-        if (isFullScreen()) {
-            showNormal();
-        } else {
-            showFullScreen();
-        }
-    } else if (event->key() == Qt::Key_Space) {
-        togglePlayerLight();
-    }
-    camera.handleInput(event);
-}
-
-void MainWidget::togglePlayerLight() {
-    lights.lights[4].isActive = !lights.lights[4].isActive;
-
-    if (lights.lights[4].isActive) {
-        neonLight.play();
-        humming.play();
-    } else {
-        humming.stop();
-    }
-}
 
 void MainWidget::keyReleaseEvent(QKeyEvent* event) {
     camera.handleInput(event);
@@ -146,6 +122,7 @@ void MainWidget::initSounds() {
 void MainWidget::initScene() {
     endScene = new Scene();
     endScene->setGeometry(make_shared<Sphere>());
+    endScene->setShouldCollide(false);
 
     Scene* cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
@@ -200,93 +177,49 @@ void MainWidget::initializeGL()
     initSounds();
     initLights();
 
-    // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
-
-    // Enable back face culling
     glEnable(GL_CULL_FACE);
-
-    // Use QBasicTimer because its faster than QTimer
+    glEnable(GL_MULTISAMPLE);
     timer.start(1000.0 / update_fps, this);
 }
 
 
 void MainWidget::initShaders()
 {
-    // Compile vertex shader
     if (!lightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
-
-    // Compile fragment shader
     if (!lightProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/lamp.glsl"))
         close();
-
-    // Link shader pipeline
     if (!lightProgram.link())
         close();
-
-    // SCENE RENDER SHADER
-    // Compile vertex shader
     if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
-
-    // Compile fragment shader
     if (!colorLightProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/colorAndLight.glsl"))
         close();
-
-    // Link shader pipeline
     if (!colorLightProgram.link())
         close();
-
-    // NORMAL SHADER
-    // Compile vertex shader
     if (!normalColorProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/camera.glsl"))
         close();
-
-    // Compile fragment shader
     if (!normalColorProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/normalColor.glsl"))
         close();
-
-    // Link shader pipeline
     if (!normalColorProgram.link())
         close();
-
-    // OUTLINE SHADER
-    // Compile vertex shader
     if (!outlineProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
         close();
-
-    // Compile fragment shader
     if (!outlineProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/outlineShader.glsl"))
         close();
-
-    // Link shader pipeline
     if (!outlineProgram.link())
         close();
-
-    // HDR SHADER (Tonemapping)
-    // Compile vertex shader
     if (!hdrToneMappingProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
         close();
-
-    // Compile fragment shader
     if (!hdrToneMappingProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/hdr.glsl"))
         close();
-
-    // Link shader pipeline
     if (!hdrToneMappingProgram.link())
         close();
-
-    // HDR SHADER (Tonemapping)
-    // Compile vertex shader
     if (!bloomProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/screen.glsl"))
         close();
-
-    // Compile fragment shader
     if (!bloomProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/bloom.glsl"))
         close();
-
-    // Link shader pipeline
     if (!bloomProgram.link())
         close();
 }
@@ -295,18 +228,15 @@ void MainWidget::initShaders()
 //! [4]
 void MainWidget::initTextures()
 {
-    // Load cube.png image
     texture = new QOpenGLTexture(QImage(":/textures/test.png").mirrored());
-
-    // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
-
-    // Set bilinear filtering mode for texture magnification
     texture->setMagnificationFilter(QOpenGLTexture::Linear);
-
-    // Wrap texture coordinates by repeating
-    // f.ex. texture coordinate (1.1, 1.2) is same as (0.1, 0.2)
     texture->setWrapMode(QOpenGLTexture::Repeat);
+}
+
+bool MainWidget::cameraCollide()
+{
+    return scene.collide(camera);
 }
 
 Camera MainWidget::getCamera() const
@@ -321,18 +251,46 @@ QMatrix4x4 MainWidget::getProjection() const
 
 void MainWidget::resizeGL(int w, int h)
 {
-    // Calculate aspect ratio
     qreal aspect = qreal(w) / qreal(h ? h : 1);
-
     const qreal zNear = 0.1, zFar = 1000.0, fov = 60.0;
-
-    // Reset projection
     projection.setToIdentity();
-
-    // Set perspective projection
     projection.perspective(fov, aspect, zNear, zFar);
 }
 
+void MainWidget::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_P) {
+        if (isFullScreen()) {
+            showNormal();
+        } else {
+            showFullScreen();
+        }
+    } else if (event->key() == Qt::Key_Space) {
+        if (currentLevel>2) {
+            togglePlayerLight();
+        }
+    } else if (event->key() == Qt::Key_Up) {
+        loadNextLevel();
+    }
+    camera.handleInput(event);
+}
+
+void MainWidget::togglePlayerLight() {
+    lights.lights[4].isActive = !lights.lights[4].isActive;
+    if (currentLevel == 3) {
+        lightToggled.insert(Red);
+        lightToggled.insert(Green);
+        lightToggled.insert(Blue);
+        lightToggled.insert(Pink);
+    }
+
+    if (lights.lights[4].isActive) {
+        neonLight.play();
+        humming.play();
+    } else {
+        humming.stop();
+    }
+}
 
 void MainWidget::timerEvent(QTimerEvent *event)
 {
@@ -340,6 +298,9 @@ void MainWidget::timerEvent(QTimerEvent *event)
     timeElapsed = last_time.msecsTo(new_time);
     last_time = new_time;
     setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
+
+    scene.updateGlobalMatrix();
+    camera.update(timeElapsed);
     collideCheck();
 
     updatePlayerLight();
@@ -353,6 +314,23 @@ void MainWidget::updatePlayerLight() {
     float power = 0.5+ (n+1)/4;
     lights.lights[4].power = power;
     lights.lights[4].position = camera.getPosition();
+    float t = 1000;
+    n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
+    power = 0.5+ (n+1)/2;
+    lights.lights[0].power = power;
+    t+=1000;
+    n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
+    power = 0.5+ (n+1)/2;
+    lights.lights[1].power = power;
+    t+=1000;
+    n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
+    power = 0.5+ (n+1)/2;
+    lights.lights[2].power = power;
+    t+=1000;
+    n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
+    power = 0.5+ (n+1)/2;
+    lights.lights[3].power = power;
+
 }
 
 void MainWidget::isAllLightToggled() {
@@ -379,6 +357,7 @@ void MainWidget::updateHumVolume() {
 }
 
 void MainWidget::loadNextLevel() {
+    qDebug() << currentLevel + 1;
     currentType = None;
     terrainScene->removeChild(endScene);
     if (currentLevel == 1) {
@@ -400,7 +379,7 @@ void MainWidget::loadNextLevel() {
 
 void MainWidget::collideCheck() {
     for (int i = 0; i<lights.size-1; i++) {
-        if (lights.lights[i].collide(camera.getBoundingBox())) {
+        if (currentLevel !=3 && lights.lights[i].collide(camera.getBoundingBox())) {
             if (i == currentType) return;
             lightSwitch.play();
             lights.lights[currentType].resetPower();
@@ -419,9 +398,6 @@ void MainWidget::collideCheck() {
 
 void MainWidget::paintGL()
 {
-    camera.update(timeElapsed);
-    scene.updateGlobalMatrix();
-    glEnable(GL_MULTISAMPLE);
     if (vectorialMode) {
         renderVectorialWithBloom();
     } else {
@@ -554,7 +530,6 @@ void MainWidget::render() {
     lightProgram.setUniformValue("view", camera.getMatrix());
     lightProgram.setUniformValue("projection", projection);
     lights.display(&lightProgram);
-
 }
 
 void MainWidget::renderVectorial(QOpenGLFramebufferObject* frameNormal) {

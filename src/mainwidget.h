@@ -85,6 +85,7 @@ public:
     Camera getCamera() const;
     Type currentType = None;
 
+    bool cameraCollide();
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent *event) override;

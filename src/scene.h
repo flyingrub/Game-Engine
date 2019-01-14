@@ -7,6 +7,7 @@
 #include <optional>
 #include "geometry/geometry.h"
 #include <memory>
+#include "camera.h"
 
 enum Type {Red, Blue, Green, Pink, None};
 
@@ -33,6 +34,10 @@ public:
     bool hasChild(Scene* s) const;
     void setType(Type t);
 
+    bool collide(Camera camera);
+    bool getShouldCollide() const;
+    void setShouldCollide(bool value);
+
 private:
     Type type = Type::None;
     QVector3D m_translation = {0,0,0};
@@ -42,6 +47,7 @@ private:
     std::optional<Scene*> parent;
     std::vector<Scene*> children;
     std::optional<std::shared_ptr<Geometry>> geometry;
+    bool shouldCollide=true;
 };
 
 #endif // SCENE_H

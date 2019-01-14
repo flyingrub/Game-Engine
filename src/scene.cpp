@@ -83,7 +83,7 @@ bool Scene::inView() {
             main->getProjection() *
             main->getCamera().getMatrix() *
             globalMatrix;
-    BoundingBox b = geometry.value().get()->getScreenSpaceBoundingBox(mvp);
+    BoundingBox b = geometry.value().get()->getBoundingBox(mvp);
     return b.inView();
 }
 
@@ -100,7 +100,30 @@ QMatrix4x4 Scene::getGlobalMatrix() const
 
 BoundingBox Scene::getGeometryBoundingBox() const
 {
-    return geometry.value().get()->getBoundingBox();
+    return geometry.value().get()->getBoundingBox(globalMatrix);
+}
+
+bool Scene::collide(Camera camera) {
+    if (shouldCollide && geometry && getGeometryBoundingBox().collide(camera.getBoundingBox())) {
+        return true;
+    }
+    bool collide = false;
+    for (auto * c : children) {
+        if (c->collide(camera)) {
+            collide = true;
+        }
+    }
+    return collide;
+}
+
+bool Scene::getShouldCollide() const
+{
+    return shouldCollide;
+}
+
+void Scene::setShouldCollide(bool value)
+{
+    shouldCollide = value;
 }
 
 bool Scene::hasChild(Scene *s) const

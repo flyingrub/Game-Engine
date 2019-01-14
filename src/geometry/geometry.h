@@ -29,7 +29,7 @@ public:
     void calcBoundingBox();
     void draw(QOpenGLShaderProgram* program);
     BoundingBox getBoundingBox() const;
-    BoundingBox getScreenSpaceBoundingBox(QMatrix4x4 matrix) const;
+    BoundingBox getBoundingBox(QMatrix4x4 matrix) const;
 protected:
     BoundingBox boundingBox;
     vector<VertexData> vertices;

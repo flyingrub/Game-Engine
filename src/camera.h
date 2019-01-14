@@ -16,9 +16,9 @@ public:
     QVector3D getPosition() const;
     BoundingBox getBoundingBox();
 
+
 private:
     void updateVelocity();
-
     QVector3D position = {-15,-15,2};
     QVector3D front = {1,1,0};
     QVector3D up = {0,0,1};
