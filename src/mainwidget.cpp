@@ -68,6 +68,7 @@ MainWidget::MainWidget(QWidget *parent, int update_fps) :
     update_fps(update_fps)
 {
     singleton = this;
+     setMouseTracking(true);
 }
 
 MainWidget::~MainWidget()
@@ -86,6 +87,15 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
             showNormal();
         } else {
             showFullScreen();
+        }
+    } else if (event->key() == Qt::Key_Space) {
+        lights.lights[4].isActive = !lights.lights[4].isActive;
+
+        if (lights.lights[4].isActive) {
+            neonLight.play();
+            humming.play();
+        } else {
+            humming.stop();
         }
     }
     camera.handleInput(event);
@@ -115,49 +125,16 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 
 }
 
-void MainWidget::timerEvent(QTimerEvent *event)
-{
-    QTime new_time = QTime::currentTime();
-    timeElapsed = last_time.msecsTo(new_time);
-    last_time = new_time;
-    setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
-    collideCheck();
-
-    if (fmod(rotation_angle, 360) == 0) rotation_angle -= 360;
-    rotation_angle = rotation_speed * timeElapsed / 10.0;
-    //cubeScene->rotate({0,0,rotation_angle*0.5f});
-    update();
+void MainWidget::initSounds() {
+    lightSwitch.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/switch.wav"));
+    neonLight.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/neon.wav"));
+    humming.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/hum.wav"));
+    humming.setLoopCount(QSoundEffect::Infinite);
+    humming.setVolume(0.6);
 }
 
-void MainWidget::collideCheck() {
-    for (int i = 0; i<lights.size; i++) {
-        if (lights.lights[i].collide(camera.getBoundingBox())) {
-            lights.lights[currentType].resetPower();
-            currentType = static_cast<Type>(i);
-            lights.lights[currentType].increasePower();
-            vectorialMode = false;
-            return;
-        }
-    }
-    vectorialMode = false;
-}
 
-void MainWidget::initializeGL()
-{
-    makeCurrent();
-    initializeOpenGLFunctions();
-
-    glClearColor(0, 0, 0, 1);
-
-    initShaders();
-    initTextures();
-
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enable back face culling
-    glEnable(GL_CULL_FACE);
-
+void MainWidget::initScene() {
     Scene* cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene->setGeometry(cube);
@@ -191,17 +168,33 @@ void MainWidget::initializeGL()
     terrainScene->addChild(cubeScene1);
     terrainScene->addChild(cubeScene2);
     terrainScene->addChild(cubeScene3);
+}
 
-
-
+void MainWidget::initLights() {
     lights.lights[0] = Light({-10,-10,3},{1,0,0});
     lights.lights[1] = Light({10,10,3}, {0,1,0});
     lights.lights[2] = Light({10,-10,3},{0,0,1});
     lights.lights[3] = Light({-10,10,3},{1,0,1});
-    lights.lights[0].follow(cubeScene);
-    lights.lights[1].follow(cubeScene);
-    lights.lights[2].follow(cubeScene);
-    lights.lights[3].follow(cubeScene);
+}
+
+void MainWidget::initializeGL()
+{
+    makeCurrent();
+    initializeOpenGLFunctions();
+
+    glClearColor(0, 0, 0, 1);
+
+    initShaders();
+    initTextures();
+    initScene();
+    initSounds();
+    initLights();
+
+    // Enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+
+    // Enable back face culling
+    glEnable(GL_CULL_FACE);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(1000.0 / update_fps, this);
@@ -330,6 +323,35 @@ void MainWidget::resizeGL(int w, int h)
 
     // Set perspective projection
     projection.perspective(fov, aspect, zNear, zFar);
+}
+
+
+void MainWidget::timerEvent(QTimerEvent *event)
+{
+    QTime new_time = QTime::currentTime();
+    timeElapsed = last_time.msecsTo(new_time);
+    last_time = new_time;
+    setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
+    collideCheck();
+
+    lights.lights[4].position = camera.getPosition();
+    update();
+}
+
+void MainWidget::collideCheck() {
+    for (int i = 0; i<lights.size-1; i++) {
+        if (lights.lights[i].collide(camera.getBoundingBox())) {
+            if (i == currentType) return;
+            lightSwitch.play();
+            lights.lights[currentType].resetPower();
+            currentType = static_cast<Type>(i);
+            lights.lights[currentType].increasePower();
+            lights.lights[4].color = lights.lights[currentType].color;
+            vectorialMode = false;
+            return;
+        }
+    }
+    vectorialMode = false;
 }
 
 void MainWidget::paintGL()

@@ -89,7 +89,7 @@ struct Lights {
         }
     }
     void display(QOpenGLShaderProgram *p) {
-        for (size_t i = 0; i<size; i++) {
+        for (size_t i = 0; i<size-1; i++) {
             lights[i].debug(p);
         }
     }

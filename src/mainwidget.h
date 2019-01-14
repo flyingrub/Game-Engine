@@ -58,6 +58,7 @@
 #include <QMatrix4x4>
 #include <QQuaternion>
 #include <QVector2D>
+#include <QSoundEffect>
 #include <QBasicTimer>
 #include <QTime>
 #include <QOpenGLShaderProgram>
@@ -128,6 +129,10 @@ private:
 
     bool vectorialMode = false;
 
+    QSoundEffect lightSwitch;
+    QSoundEffect neonLight;
+    QSoundEffect humming;
+
     float quadVertices[24] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
@@ -146,6 +151,9 @@ private:
     void renderColorWithBloom();
     void renderVectorialWithBloom();
     void collideCheck();
+    void initSounds();
+    void initScene();
+    void initLights();
 };
 
 #endif // MAINWIDGET_H
