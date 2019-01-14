@@ -16,6 +16,7 @@ public:
     Scene();
     virtual ~Scene();
     void addChild(Scene* s);
+    void removeChild(Scene* s);
     std::optional<Scene *> getParent();
     void setGeometry(std::shared_ptr<Geometry>);
     QMatrix4x4 getLocalMatrix();
@@ -28,7 +29,8 @@ public:
     bool inView();
     bool shouldDraw();
     QMatrix4x4 getGlobalMatrix() const;
-
+    BoundingBox getGeometryBoundingBox() const;
+    bool hasChild(Scene* s) const;
     void setType(Type t);
 
 private:

@@ -39,28 +39,33 @@ void Camera::handleInput(QKeyEvent *event)
 }
 
 void Camera::updateVelocity() {
+    QVector3D toAdd = {0,0,0};
     if (keysPressed.contains(Qt::Key_E)) {
-        velocity -= cameraSpeed * up;
+        toAdd -= cameraSpeed * up;
     }
     if (keysPressed.contains(Qt::Key_A)) {
-        velocity += cameraSpeed * up;
+        toAdd += cameraSpeed * up;
     }
     if (keysPressed.contains(Qt::Key_D)) {
         QVector3D right = QVector3D::crossProduct(front,up).normalized();
-        velocity += cameraSpeed * right;
+        toAdd += cameraSpeed * right;
     }
     if (keysPressed.contains(Qt::Key_Q)) {
         QVector3D right = QVector3D::crossProduct(front,up).normalized();
-        velocity -= cameraSpeed * right;
+        toAdd -= cameraSpeed * right;
     }
     if (keysPressed.contains(Qt::Key_Z)) {
         QVector3D f (front.x(), front.y(), 0);
-        velocity += cameraSpeed * f.normalized();
+        toAdd += cameraSpeed * f.normalized();
     }
     if (keysPressed.contains(Qt::Key_S)) {
         QVector3D f (front.x(), front.y(), 0);
-        velocity -= cameraSpeed * f.normalized();
+        toAdd -= cameraSpeed * f.normalized();
     }
+    if (keysPressed.contains(Qt::Key_Shift)) {
+        toAdd *= 1.6f;
+    }
+    velocity += toAdd;
 }
 
 void Camera::update(float time)

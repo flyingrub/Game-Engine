@@ -89,16 +89,20 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
             showFullScreen();
         }
     } else if (event->key() == Qt::Key_Space) {
-        lights.lights[4].isActive = !lights.lights[4].isActive;
-
-        if (lights.lights[4].isActive) {
-            neonLight.play();
-            humming.play();
-        } else {
-            humming.stop();
-        }
+        togglePlayerLight();
     }
     camera.handleInput(event);
+}
+
+void MainWidget::togglePlayerLight() {
+    lights.lights[4].isActive = !lights.lights[4].isActive;
+
+    if (lights.lights[4].isActive) {
+        neonLight.play();
+        humming.play();
+    } else {
+        humming.stop();
+    }
 }
 
 void MainWidget::keyReleaseEvent(QKeyEvent* event) {
@@ -126,15 +130,23 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *event)
 }
 
 void MainWidget::initSounds() {
-    lightSwitch.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/switch.wav"));
-    neonLight.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/neon.wav"));
-    humming.setSource(QUrl::fromLocalFile("/home/fly/workspace/Moteur de jeux/cube/sounds/hum.wav"));
+    lightSwitch.setSource(QUrl::fromLocalFile("../cube/sounds/switch.wav"));
+    neonLight.setSource(QUrl::fromLocalFile("../cube/sounds/neon.wav"));
+    neonRev.setSource(QUrl::fromLocalFile("../cube/sounds/neonrev.wav"));
+    humming.setSource(QUrl::fromLocalFile("../cube/sounds/hum.wav"));
     humming.setLoopCount(QSoundEffect::Infinite);
     humming.setVolume(0.6);
+    ambiant.setSource(QUrl::fromLocalFile("../cube/sounds/ambiant.wav"));
+    ambiant.setLoopCount(QSoundEffect::Infinite);
+    ambiant.setVolume(0.4);
+    ambiant.play();
 }
 
 
 void MainWidget::initScene() {
+    endScene = new Scene();
+    endScene->setGeometry(make_shared<Sphere>());
+
     Scene* cubeScene = new Scene();
     shared_ptr<Geometry> cube = make_shared<Geometry>("geometries/Cube.obj");
     cubeScene->setGeometry(cube);
@@ -143,25 +155,23 @@ void MainWidget::initScene() {
 
     Scene* cubeScene1 = new Scene();
     cubeScene1->setGeometry(cube);
-    cubeScene1->translate({0,0,4});
+    cubeScene1->translate({1,1,1});
     cubeScene1->setType(Type::Pink);
-    cubeScene1->scale({5,2,3});
 
     Scene* cubeScene2 = new Scene();
     cubeScene2->setGeometry(cube);
-    cubeScene2->translate({0,0,5});
+    cubeScene2->translate({1,-1,1});
     cubeScene2->setType(Type::Blue);
-    cubeScene2->scale({3,3,4});
 
     Scene* cubeScene3 = new Scene();
     cubeScene3->setGeometry(cube);
-    cubeScene3->translate({0,0,2});
-    cubeScene3->setType(Type::Green);
-    cubeScene3->scale({2,2,1});
+    cubeScene3->translate({-1,-1,1});
+    cubeScene3->setType(Type::Pink);
 
     terrainScene = new Scene();
     shared_ptr<Geometry> terrain = make_shared<Terrain>(300,300);
     terrainScene->setGeometry(terrain);
+
 
     scene.addChild(terrainScene);
     terrainScene->addChild(cubeScene);
@@ -279,8 +289,6 @@ void MainWidget::initShaders()
     // Link shader pipeline
     if (!bloomProgram.link())
         close();
-
-
 }
 //! [3]
 
@@ -334,8 +342,60 @@ void MainWidget::timerEvent(QTimerEvent *event)
     setWindowTitle(QString("Lux | FPS : %1").arg((int) (1000 / timeElapsed)));
     collideCheck();
 
-    lights.lights[4].position = camera.getPosition();
+    updatePlayerLight();
+    isAllLightToggled();
+    updateHumVolume();
     update();
+}
+
+void MainWidget::updatePlayerLight() {
+    float n = SimplexNoise::noise((float) start_time.elapsed() / 1000.0f);
+    float power = 0.5+ (n+1)/4;
+    lights.lights[4].power = power;
+    lights.lights[4].position = camera.getPosition();
+}
+
+void MainWidget::isAllLightToggled() {
+    if (lightToggled.size()==4) {
+        terrainScene->addChild(endScene);
+        lightToggled = QSet<Type>();
+    }
+}
+
+void MainWidget::updateHumVolume() {
+    if (currentLevel !=2) {
+        return;
+    }
+    float nearestDistance = 5000;
+    for (int i = 0; i < 4; i++) {
+        QVector3D lightPos = lights.lights[i].position;
+        float current = camera.getPosition().distanceToPoint(lightPos);
+        if (current < nearestDistance) {
+            nearestDistance = current;
+        }
+    }
+    float vol = float_map(nearestDistance, 0,20,1,0);
+    humming.setVolume(vol);
+}
+
+void MainWidget::loadNextLevel() {
+    currentType = None;
+    terrainScene->removeChild(endScene);
+    if (currentLevel == 1) {
+        lights.lights[0].isActive = false;
+        lights.lights[1].isActive = false;
+        lights.lights[2].isActive = false;
+        lights.lights[3].isActive = false;
+        togglePlayerLight();
+    } else if (currentLevel == 2) {
+        lights.lights[0].isActive = true;
+        lights.lights[1].isActive = true;
+        lights.lights[2].isActive = true;
+        lights.lights[3].isActive = true;
+        neonRev.play();
+    }
+    humming.setVolume(0.4);
+    currentLevel++;
 }
 
 void MainWidget::collideCheck() {
@@ -347,11 +407,14 @@ void MainWidget::collideCheck() {
             currentType = static_cast<Type>(i);
             lights.lights[currentType].increasePower();
             lights.lights[4].color = lights.lights[currentType].color;
-            vectorialMode = false;
+            lightToggled.insert(currentType);
             return;
         }
     }
-    vectorialMode = false;
+    if (terrainScene->hasChild(endScene) &&
+            endScene->getGeometryBoundingBox().collide(camera.getBoundingBox())) {
+        loadNextLevel();
+    }
 }
 
 void MainWidget::paintGL()

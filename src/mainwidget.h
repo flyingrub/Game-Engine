@@ -66,6 +66,11 @@
 #include "scene.h"
 #include "camera.h"
 #include "light.h"
+
+inline float float_map(float value, float inMin, float inMax, float outMin, float outMax) {
+  return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
+
 class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -96,7 +101,6 @@ protected:
     void initTextures();
 
     void calcFPS();    
-    void renderText(double x, double y, const QString &str, const QFont &font = QFont(), const QColor &color = QColor(1,1,1));
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram colorLightProgram;
@@ -125,6 +129,7 @@ private:
     static float rotation_speed;
     Scene* cubeScene;
     Scene* terrainScene;
+    Scene* endScene;
     Scene scene;
 
     bool vectorialMode = false;
@@ -132,6 +137,11 @@ private:
     QSoundEffect lightSwitch;
     QSoundEffect neonLight;
     QSoundEffect humming;
+    QSoundEffect ambiant;
+    QSoundEffect neonRev;
+
+    int currentLevel = 1;
+    QSet<Type> lightToggled;
 
     float quadVertices[24] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
@@ -154,6 +164,11 @@ private:
     void initSounds();
     void initScene();
     void initLights();
+    void togglePlayerLight();
+    void loadNextLevel();
+    void updatePlayerLight();
+    void isAllLightToggled();
+    void updateHumVolume();
 };
 
 #endif // MAINWIDGET_H

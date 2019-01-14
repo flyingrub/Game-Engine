@@ -12,9 +12,7 @@ SOURCES += \
     src/geometry/terrain.cpp \
     src/geometry/cube.cpp \
     src/geometry/geometry.cpp \
-    src/geometry/octreeterrain.cpp \
     src/camera.cpp \
-    src/postprocessing.cpp \
     src/geometry/sphere.cpp \
     src/noise/SimplexNoise.cpp
 
@@ -24,9 +22,7 @@ HEADERS += \
     src/geometry/terrain.h \
     src/geometry/cube.h \
     src/geometry/geometry.h \
-    src/geometry/octreeterrain.h \
     src/camera.h \
-    src/postprocessing.h \
     src/geometry/sphere.h \
     src/noise/SimplexNoise.h \
     src/light.h \

@@ -18,6 +18,15 @@ void Scene::addChild(Scene* s)
     s->parent = this;
 }
 
+void Scene::removeChild(Scene *s)
+{
+    for (size_t i = 0; i<children.size(); i++) {
+        if (children[i] == s) {
+            children.erase(children.begin() + i);
+        }
+    }
+}
+
 std::optional<Scene*> Scene::getParent()
 {
     return parent;
@@ -87,6 +96,21 @@ bool Scene::shouldDraw()
 QMatrix4x4 Scene::getGlobalMatrix() const
 {
     return globalMatrix;
+}
+
+BoundingBox Scene::getGeometryBoundingBox() const
+{
+    return geometry.value().get()->getBoundingBox();
+}
+
+bool Scene::hasChild(Scene *s) const
+{
+    for (size_t i = 0; i<children.size(); i++) {
+        if (children[i] == s) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Scene::setType(Type t)
