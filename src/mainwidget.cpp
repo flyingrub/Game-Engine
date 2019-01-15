@@ -116,6 +116,8 @@ void MainWidget::initSounds() {
     ambiant.setLoopCount(QSoundEffect::Infinite);
     ambiant.setVolume(0.4);
     ambiant.play();
+    electricty.setSource(QUrl::fromLocalFile("../cube/sounds/electricty.wav"));
+    electricty.setVolume(0.3);
 }
 
 
@@ -271,13 +273,15 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         }
     } else if (event->key() == Qt::Key_Up) {
         loadNextLevel();
+    } else if (event->key() == Qt::Key_M) {
+        ambiant.isPlaying() ? ambiant.stop() : ambiant.play();
     }
     camera.handleInput(event);
 }
 
 void MainWidget::togglePlayerLight() {
     lights.lights[4].isActive = !lights.lights[4].isActive;
-    if (currentLevel == 3) {
+    if (currentLevel == 3 && !terrainScene->hasChild(endScene)) {
         lightToggled.insert(Red);
         lightToggled.insert(Green);
         lightToggled.insert(Blue);
@@ -316,25 +320,26 @@ void MainWidget::updatePlayerLight() {
     lights.lights[4].position = camera.getPosition();
     float t = 1000;
     n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
-    power = 0.5+ (n+1)/2;
+    power = 0.5+ (n+1)/4;
     lights.lights[0].power = power;
     t+=1000;
     n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
-    power = 0.5+ (n+1)/2;
+    power = 0.5+ (n+1)/4;
     lights.lights[1].power = power;
     t+=1000;
     n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
-    power = 0.5+ (n+1)/2;
+    power = 0.5+ (n+1)/4;
     lights.lights[2].power = power;
     t+=1000;
     n = SimplexNoise::noise((float) (start_time.elapsed()+t) / 1000.0f);
-    power = 0.5+ (n+1)/2;
+    power = 0.5+ (n+1)/4;
     lights.lights[3].power = power;
 
 }
 
 void MainWidget::isAllLightToggled() {
     if (lightToggled.size()==4) {
+        electricty.play();
         terrainScene->addChild(endScene);
         lightToggled = QSet<Type>();
     }

@@ -140,6 +140,7 @@ private:
     QSoundEffect humming;
     QSoundEffect ambiant;
     QSoundEffect neonRev;
+    QSoundEffect electricty;
 
     int currentLevel = 1;
     QSet<Type> lightToggled;
