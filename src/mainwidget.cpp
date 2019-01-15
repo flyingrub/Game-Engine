@@ -275,6 +275,10 @@ void MainWidget::keyPressEvent(QKeyEvent* event)
         loadNextLevel();
     } else if (event->key() == Qt::Key_M) {
         ambiant.isPlaying() ? ambiant.stop() : ambiant.play();
+    } else if (event->key() == Qt::Key_L) {
+        vectorialMode = !vectorialMode;
+    } else if (event->key() == Qt::Key_K) {
+        normalMode = !normalMode;
     }
     camera.handleInput(event);
 }
@@ -403,7 +407,9 @@ void MainWidget::collideCheck() {
 
 void MainWidget::paintGL()
 {
-    if (vectorialMode) {
+    if (normalMode) {
+        renderNormal();
+    } else if (vectorialMode) {
         renderVectorialWithBloom();
     } else {
         renderColorWithBloom();

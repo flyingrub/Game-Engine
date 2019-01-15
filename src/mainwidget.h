@@ -134,6 +134,7 @@ private:
     Scene scene;
 
     bool vectorialMode = false;
+    bool normalMode = false;
 
     QSoundEffect lightSwitch;
     QSoundEffect neonLight;
